@@ -292,6 +292,7 @@ button:focus-visible,.card:focus-visible,.ms:focus-visible,input:focus-visible{o
 .anak{color:#d93025;display:inline-flex;align-items:center;justify-content:center;line-height:0}
 :root[data-theme="dark"] .anak{color:#ff6b6b}
 .anak svg{width:100%;height:100%;display:block}
+.anak.nengen,:root[data-theme="dark"] .anak.nengen{color:var(--ink)}
 .akunit .akmain{width:46px;height:46px;color:var(--pri)}
 .akunit b{font-size:13px;margin-top:4px;display:block}
 .akunit small{font-size:11px;color:var(--muted);line-height:1.25;margin-top:2px;display:block}
@@ -356,7 +357,7 @@ var ANAK_PATH = {
   "datas":       {d:"M18 34 L82 34 M18 66 L82 66", vb:"0 0 100 100"},
   "tekelingai":  {d:"M22 18 L22 76 Q22 86 34 74 L66 32 Q78 18 78 36 L78 82", vb:"0 0 100 100"},
   "keleniah":    {d:"M22 20 L22 76 Q22 86 34 74 L66 30 Q78 18 78 36 L78 82", vb:"0 0 100 100"},
-  "nengen":      {d:"M24.4 85.3 C25.5 85.4 29.1 86.3 30.9 86.1 C32.8 85.9 32.8 86.6 35.4 84 C38.1 81.4 42.8 76.9 46.9 70.5 C51.1 64.1 55.7 55.2 60.5 45.5 C65.2 35.8 72.8 17.8 75.2 12.3", vb:"0 0 100 100"},
+  "nengen":      {d:"M22 86 C40 78 60 48 78 14", vb:"0 0 100 100", sw:9},
   "bitan_o":     {d:"M50 16 L50 84", vb:"0 0 100 100"},
   "bitan_u":     {d:"M18 50 L82 50", vb:"0 0 100 100"},
   "tekelungau":  {d:"M20 24 Q50 88 80 24", vb:"0 0 100 100"}
@@ -452,8 +453,8 @@ function anakSvg(key, size){
   var item = ANAK_PATH[key];
   if (!item) return '';
   var sz = size || 18;
-  return '<span class="anak" style="width:' + sz + 'px;height:' + sz + 'px" aria-hidden="true">' +
-         '<svg viewBox="' + item.vb + '"><path d="' + item.d + '" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+  return '<span class="anak' + (key === 'nengen' ? ' nengen' : '') + '" style="width:' + sz + 'px;height:' + sz + 'px" aria-hidden="true">' +
+         '<svg viewBox="' + item.vb + '"><path d="' + item.d + '" fill="none" stroke="currentColor" stroke-width="' + (item.sw || 13) + '" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
          '</span>';
 }
 
@@ -761,7 +762,7 @@ function materi(){
     '</div>';
     h += '<div class="list">' + ANAK_CATALOG.map(function(a){
       return '<button class="li" data-anak="' + a.id + '">' +
-        '<span class="th" style="color:#d93025">' + anakSvg(a.id, 30) + '</span>' +
+        '<span class="th" style="color:' + (a.id === 'nengen' ? 'var(--ink)' : '#d93025') + '">' + anakSvg(a.id, 30) + '</span>' +
         '<span class="tx">' +
           '<b>' + a.nama + ' <span class="badge">' + a.posisi + '</span></b>' +
           '<small>Bunyi: <b>' + a.bunyi + '</b> · ' + a.penggunaan + '</small>' +
@@ -845,7 +846,7 @@ function detailAnak(anakId){
 
   var h = '<div class="top"><button class="btn alt" id="back">Kembali</button><div class="stat">Anak Aksara · ' + item.posisi + '</div></div>' +
     '<div class="dcard" style="flex-direction:column;gap:12px">' +
-      '<div style="color:#d93025;width:92px;height:92px;display:flex;align-items:center;justify-content:center">' + anakSvg(item.id, 92) + '</div>' +
+      '<div style="color:' + (item.id === 'nengen' ? 'var(--ink)' : '#d93025') + ';width:92px;height:92px;display:flex;align-items:center;justify-content:center">' + anakSvg(item.id, 92) + '</div>' +
       '<span class="badge">Posisi: ' + item.posisi + ' Induk Aksara</span>' +
     '</div>' +
     '<h1 class="dn">' + item.nama + '</h1>' +
@@ -1096,7 +1097,7 @@ function renderCompositeGlyph(u, mainSize, subSize){
   var topMarks = '', botMarks = '', rightMarks = '';
   u.anak.forEach(function(a){
     if (!a || !a.key) return;
-    var svg = anakSvg(a.key, subSize);
+    var svg = anakSvg(a.key, a.key === "nengen" ? mainSize : subSize);
     if (a.pos === "Atas") topMarks += svg;
     else if (a.pos === "Bawah") botMarks += svg;
     else if (a.pos === "Samping") rightMarks += svg;
