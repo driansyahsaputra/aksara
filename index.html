@@ -268,7 +268,6 @@ button:focus-visible,.card:focus-visible,.ms:focus-visible,input:focus-visible{o
 /* Live Camera Scan & Anak Aksara Composite */
 .cambox{position:relative;width:100%;aspect-ratio:4/3;border-radius:24px;overflow:hidden;background:#111;box-shadow:var(--shadow);margin-bottom:12px}
 .cambox video{width:100%;height:100%;object-fit:cover;display:block}
-.cambox #capcv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;background:#111}
 .roimask{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;pointer-events:none}
 .roibox{width:84%;height:34%;border:2.5px solid var(--gold);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.48);position:relative;transition:border-color .2s}
 .roibox.active{border-color:#6fcf97}
@@ -709,7 +708,7 @@ function home(){
   var h = '<header class="hd"><div><p class="muted">Selamat belajar</p><h1>Aksara Lampung</h1></div>' + swHtml() + '</header>';
   h += '<div class="car" id="car">' +
     '<div class="slide s1"><div><p class="k">Aksara hari ini</p><div class="big">' + NAMA[gid] + '</div><div class="row2"><button class="pill" id="s1go">Pelajari</button>' + (CAN_SPEAK ? '<button class="rb" id="s1sp" aria-label="Dengarkan ' + NAMA[gid] + '">' + ico('speaker', 20) + '</button>' : '') + '</div></div>' + g(gid, 'sg') + '</div>' +
-    '<div class="slide s2"><div style="flex:1"><p class="k">Fitur Kamera</p><div class="big" style="font-size:26px">Pindai Aksara</div><p class="sm">Ambil foto teks Latin, sistem membaca lalu menerjemahkannya ke Aksara Lampung.</p><button class="pill" id="s2cam">Buka Kamera</button></div></div>' +
+    '<div class="slide s2"><div style="flex:1"><p class="k">Fitur Kamera</p><div class="big" style="font-size:26px">Pindai Aksara</div><p class="sm">Arahkan kamera ke teks Latin, langsung diubah ke Aksara Lampung.</p><button class="pill" id="s2cam">Buka Kamera</button></div></div>' +
     '<div class="slide s3"><div style="flex:1"><p class="k">Progres belajar</p><div class="big">' + sn + '<span>/20</span></div><p class="sm">aksara sudah dilihat</p><div class="bar w"><i style="width:' + (sn * 5) + '%"></i></div><button class="pill" id="s2go">Lihat capaian</button></div></div>' +
     '</div><div class="dots" aria-hidden="true"><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>';
 
@@ -727,7 +726,7 @@ function home(){
     return '<button class="li" id="' + id + '"><span class="th ic">' + ico(ic, 24) + '</span><span class="tx"><b>' + t + '</b><small>' + s + '</small></span><span class="ch">' + ico('chev', 20) + '</span></button>';
   }
   h += '<div class="sr"><h2 class="sh">Alat & Latihan</h2><button class="lnk" id="all">Lihat semua</button></div><div class="list">' +
-    row('rcam','Foto & Terjemahkan','Foto tulisan, cek kata, ubah ke Induk + Anak Aksara','cam') +
+    row('rcam','Pindai Kamera (OCR)','Deteksi kata & ubah ke Induk + Anak Aksara','cam') +
     row('r1','Kartu pasangan','Balik kartu, cocokkan aksara dengan nama','cards') +
     row('r2','Pasangkan aksara','Seret aksara ke nama yang cocok','drag') + '</div>';
 
@@ -1128,7 +1127,7 @@ function renderCompositeGlyph(u, mainSize, subSize){
 }
 
 function renderAksaraMapping(sentence){
-  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada teks. Ambil foto tulisan Latin atau ketik kata manual.</p>';
+  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada teks terdeteksi. Arahkan kamera ke tulisan atau ketik kata di bawah.</p>';
   var words = sentence.split(/\s+/).filter(Boolean);
   var html = '<div class="akstream">';
   words.forEach(function(w, wi){
@@ -1148,7 +1147,7 @@ function renderAksaraMapping(sentence){
 }
 
 function renderOverlayGlyphs(sentence){
-  if (!sentence) return '<span class="ovt">Arahkan kamera ke tulisan lalu tekan Ambil Foto.</span>';
+  if (!sentence) return '<span class="ovt">Arahkan tulisan Latin ke dalam kotak kuning...</span>';
   var words = sentence.split(/\s+/).filter(Boolean).slice(0, 3);
   var glyphs = '';
   words.forEach(function(w){
@@ -1200,224 +1199,170 @@ function speakSentence(txt){
 
 function scan(){
   stopT();
-  var phase = 'camera', activeSentence = '';
+  scanPaused = false;
   var h = '<div class="pg"><h1>Pindai Aksara</h1><span class="badge" id="ocrst">Siap</span></div>' +
     '<div class="cambox">' +
       '<video id="camvid" autoplay playsinline muted></video>' +
-      '<canvas id="capcv"></canvas>' +
+      '<div class="roimask"><div class="roibox" id="roibox"><span class="roilbl">Area Bidik Teks (ROI)</span></div></div>' +
       '<div class="camov" id="camov"><span class="ovt">Memulai kamera...</span></div>' +
     '</div>' +
-    '<div class="camctrl" id="ctrl"></div>' +
-    '<input type="file" id="fcam" accept="image/*" capture="environment" hidden>' +
-    '<input type="file" id="fgal" accept="image/*" hidden>' +
+    '<div class="camctrl">' +
+      '<button class="btn alt" id="flipcam">' + ico('flip', 18) + 'Ganti Kamera</button>' +
+      '<button class="btn alt" id="pausecam">Jeda Scan</button>' +
+      '<button class="btn" id="sayword">' + ico('speaker', 18) + 'Lafalkan</button>' +
+    '</div>' +
     '<div class="scancard">' +
-      '<h3>1. Hasil Analisa Foto & Pengecekan Kamus</h3>' +
+      '<h3>1. Hasil Pembacaan OCR & Koreksi Kamus</h3>' +
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
-        '<div><small class="muted">Teks terbaca:</small> <b id="rawtxt">-</b></div>' +
+        '<div><small class="muted">Mentah OCR:</small> <b id="rawtxt">-</b></div>' +
         '<span class="badge" id="dictbadge">Kamus</span>' +
       '</div>' +
-      '<div style="margin-top:6px"><small class="muted">Setelah pengecekan:</small> <b id="normtxt" style="color:var(--pri);font-size:17px">-</b></div>' +
+      '<div style="margin-top:6px"><small class="muted">Hasil Normalisasi:</small> <b id="normtxt" style="color:var(--pri);font-size:17px">-</b></div>' +
       '<div class="sugrow" id="sugrow"></div>' +
     '</div>' +
     '<div class="scancard">' +
-      '<h3>2. Terjemahan ke Aksara Lampung (Induk + Anak)</h3>' +
-      '<div id="mapout">' + renderAksaraMapping("") + '</div>' +
+      '<h3>2. Konversi & Mapping ke Induk + Anak Aksara</h3>' +
+      '<div id="mapout">' + renderAksaraMapping("tabik pun lampung") + '</div>' +
     '</div>' +
     '<div class="scancard">' +
-      '<h3>Atau ketik kata manual</h3>' +
+      '<h3>Uji Coba Manual / Ketik Kata</h3>' +
       '<div style="display:flex;gap:8px">' +
-        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham...">' +
+        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham..." value="tabik pun lampung">' +
         '<button class="btn" id="manbtn" style="flex:none;padding:0 18px">Ubah</button>' +
       '</div>' +
     '</div>';
 
   mount('scan', h);
 
+  var activeSentence = "tabik pun lampung";
   var vid = document.getElementById('camvid');
-  var capcv = document.getElementById('capcv');
   var ocrst = document.getElementById('ocrst');
   var camov = document.getElementById('camov');
-  var ctrl = document.getElementById('ctrl');
+  var roibox = document.getElementById('roibox');
   var rawtxt = document.getElementById('rawtxt');
   var normtxt = document.getElementById('normtxt');
   var dictbadge = document.getElementById('dictbadge');
   var sugrow = document.getElementById('sugrow');
   var mapout = document.getElementById('mapout');
-  var fcam = document.getElementById('fcam');
-  var fgal = document.getElementById('fgal');
-  var MAXD = 1600;
-
-  function setStatus(t){ if (ocrst) ocrst.textContent = t; }
-
-  function showResult(sentence, rawLabel){
-    activeSentence = sentence;
-    if (normtxt) normtxt.textContent = sentence || '-';
-    if (camov) camov.innerHTML = sentence ? '<span class="ovt" style="font-weight:700;color:#e9a23b">' + sentence + '</span>' : '<span class="ovt">Belum ada teks.</span>';
-    if (mapout) mapout.innerHTML = renderAksaraMapping(sentence);
-  }
 
   function updateResult(raw, sourceLabel){
     var clean = normalizeOcrText(raw);
-    if (rawtxt) rawtxt.textContent = raw ? raw.replace(/\s+/g, ' ').trim() : '-';
-    if (!clean) { showResult('', ''); if (sugrow) sugrow.innerHTML = ''; return false; }
+    if (rawtxt) rawtxt.textContent = raw ? raw.trim() : '-';
+    if (!clean) return;
     var chk = checkDictionary(clean);
-    showResult(chk.corrected || clean);
+    activeSentence = chk.corrected || clean;
+    if (normtxt) normtxt.textContent = activeSentence;
     if (dictbadge) dictbadge.textContent = chk.matched ? 'Cocok Kamus' : (sourceLabel || 'Fonetis');
+    if (camov) camov.innerHTML = renderOverlayGlyphs(activeSentence);
+    if (mapout) mapout.innerHTML = renderAksaraMapping(activeSentence);
     if (sugrow) {
-      sugrow.innerHTML = chk.suggestions.map(function(sg){
-        return '<button class="sugchip' + (activeSentence.indexOf(sg.word) !== -1 ? ' on' : '') + '" data-w="' + sg.word + '">' + sg.word + '</button>';
+      sugrow.innerHTML = chk.suggestions.map(function(s){
+        return '<button class="sugchip' + (activeSentence.indexOf(s.word) !== -1 ? ' on' : '') + '" data-w="' + s.word + '">' + s.word + '</button>';
       }).join('');
       Array.prototype.forEach.call(sugrow.querySelectorAll('.sugchip'), function(b){
-        b.onclick = function(){ showResult(b.getAttribute('data-w')); };
+        b.onclick = function(){
+          var w = b.getAttribute('data-w');
+          activeSentence = w;
+          normtxt.textContent = w;
+          camov.innerHTML = renderOverlayGlyphs(w);
+          mapout.innerHTML = renderAksaraMapping(w);
+        };
       });
     }
-    return true;
   }
 
-  function setPhase(ph){
-    phase = ph;
-    vid.style.display = ph === 'camera' ? 'block' : 'none';
-    capcv.style.display = ph === 'result' ? 'block' : 'none';
-    if (ph === 'camera') {
-      ctrl.innerHTML =
-        '<button class="btn alt" id="flipcam">' + ico('flip', 18) + 'Ganti</button>' +
-        '<button class="btn" id="shutter" style="flex:2">' + ico('cam', 18) + 'Ambil Foto</button>' +
-        '<button class="btn alt" id="gal">Galeri</button>';
-      on('flipcam', function(){ facing = (facing === 'environment') ? 'user' : 'environment'; startCamera(); });
-      on('shutter', function(){
-        if (camStream && vid.readyState >= 2 && vid.videoWidth) captureVideo();
-        else fcam.click();
-      });
-      on('gal', function(){ fgal.click(); });
-    } else {
-      ctrl.innerHTML =
-        '<button class="btn alt" id="retake">' + ico('flip', 18) + 'Foto Ulang</button>' +
-        '<button class="btn" id="sayword">' + ico('speaker', 18) + 'Lafalkan</button>';
-      on('retake', function(){
-        setPhase('camera');
-        setStatus(camStream ? 'Siap' : 'Tanpa Kamera');
-        camov.innerHTML = '<span class="ovt">' + (camStream ? 'Arahkan kamera ke tulisan lalu tekan Ambil Foto.' : 'Kamera tidak tersedia. Tekan Ambil Foto atau Galeri untuk memilih foto.') + '</span>';
-        if (camStream) vid.play();
-      });
-      on('sayword', function(){ speakSentence(activeSentence); });
-    }
-  }
+  updateResult("tabik pun lampung", "Contoh Awal");
 
-  function drawToCanvas(src, sw, sh){
-    var sc = Math.min(1, MAXD / Math.max(sw, sh));
-    capcv.width = Math.round(sw * sc);
-    capcv.height = Math.round(sh * sc);
-    var cx = capcv.getContext('2d');
-    cx.filter = 'none';
-    cx.drawImage(src, 0, 0, capcv.width, capcv.height);
-  }
+  on('manbtn', function(){
+    var v = document.getElementById('manin').value;
+    updateResult(v, "Input Manual");
+  });
+  var manin = document.getElementById('manin');
+  if (manin) manin.oninput = function(){ updateResult(manin.value, "Input Manual"); };
+  on('sayword', function(){ speakSentence(activeSentence); });
 
-  function captureVideo(){
-    drawToCanvas(vid, vid.videoWidth, vid.videoHeight);
-    try { vid.pause(); } catch(e) {}
-    analyze();
-  }
+  on('pausecam', function(){
+    scanPaused = !scanPaused;
+    var btn = document.getElementById('pausecam');
+    if (btn) btn.textContent = scanPaused ? 'Lanjutkan Scan' : 'Jeda Scan';
+    if (ocrst) ocrst.textContent = scanPaused ? 'Dijeda' : 'Memindai...';
+  });
 
-  function loadFile(f){
-    if (!f) return;
-    setStatus('Membuka foto...');
-    var url = URL.createObjectURL(f);
-    var im = new Image();
-    im.onload = function(){
-      drawToCanvas(im, im.naturalWidth, im.naturalHeight);
-      URL.revokeObjectURL(url);
-      analyze();
-    };
-    im.onerror = function(){ URL.revokeObjectURL(url); setStatus('Foto gagal'); };
-    im.src = url;
-  }
-  fcam.onchange = function(){ loadFile(fcam.files[0]); fcam.value = ''; };
-  fgal.onchange = function(){ loadFile(fgal.files[0]); fgal.value = ''; };
+  on('flipcam', function(){
+    facing = (facing === 'environment') ? 'user' : 'environment';
+    startCamera();
+  });
+
+  var cropCanvas = document.createElement('canvas');
+  var cropCtx = cropCanvas.getContext('2d');
 
   async function initOcr(){
     if (ocrWorker) return ocrWorker;
-    setStatus('Memuat OCR...');
+    if (ocrst) ocrst.textContent = 'Memuat OCR...';
     var T = await loadTesseract();
     if (!T) throw new Error('Tesseract tidak tersedia');
-    ocrWorker = await T.createWorker('ind+eng', 1, {
-      logger: function(m){
-        if (m && m.status === 'recognizing text' && typeof m.progress === 'number') {
-          setStatus('Membaca ' + Math.round(m.progress * 100) + '%');
-        }
-      }
-    });
+    ocrWorker = await T.createWorker('ind+eng');
     await ocrWorker.setParameters({
       tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '
     });
     return ocrWorker;
   }
 
-  async function analyze(){
-    if (ocrBusy) return;
+  async function processFrame(){
+    if (TAB !== 'scan' || scanPaused || ocrBusy || !vid || vid.readyState < 2) return;
     ocrBusy = true;
-    setPhase('result');
-    if (rawtxt) rawtxt.textContent = '-';
-    if (normtxt) normtxt.textContent = '-';
-    if (sugrow) sugrow.innerHTML = '';
-    if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Menganalisa foto...</p>';
-    if (camov) camov.innerHTML = '<span class="ovt">Menganalisa foto...</span>';
     try {
-      var tmp = document.createElement('canvas');
-      tmp.width = capcv.width; tmp.height = capcv.height;
-      var tx = tmp.getContext('2d');
-      tx.filter = 'grayscale(100%) contrast(140%)';
-      tx.drawImage(capcv, 0, 0);
+      var vw = vid.videoWidth, vh = vid.videoHeight;
+      if (!vw || !vh) { ocrBusy = false; return; }
+      var rx = Math.round(vw * 0.08), ry = Math.round(vh * 0.33);
+      var rw = Math.round(vw * 0.84), rh = Math.round(vh * 0.34);
+      cropCanvas.width = rw;
+      cropCanvas.height = rh;
+      cropCtx.filter = 'grayscale(100%) contrast(145%)';
+      cropCtx.drawImage(vid, rx, ry, rw, rh, 0, 0, rw, rh);
+
+      if (roibox) roibox.classList.add('active');
+      if (ocrst) ocrst.textContent = 'Membaca...';
       var worker = await initOcr();
-      setStatus('Membaca...');
-      var res = await worker.recognize(tmp);
+      var res = await worker.recognize(cropCanvas);
       var text = res && res.data ? res.data.text : '';
-      var words = normalizeOcrText(text).split(' ').filter(function(w){ return w.length >= 2; }).slice(0, 12);
-      if (words.length) {
-        updateResult(words.join(' '), 'Hasil Foto');
-        setStatus('Selesai');
-      } else {
-        showResult('');
-        if (rawtxt) rawtxt.textContent = '-';
-        if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Tidak ada kata terbaca. Coba foto ulang lebih dekat dan terang, atau ketik kata manual.</p>';
-        if (camov) camov.innerHTML = '<span class="ovt">Tidak ada kata terbaca. Tekan Foto Ulang.</span>';
-        setStatus('Tidak ada teks');
+      if (text && normalizeOcrText(text).length >= 2) {
+        updateResult(text, 'Live OCR');
       }
+      if (ocrst && !scanPaused) ocrst.textContent = 'Aktif';
     } catch(err) {
-      setStatus('Mode Manual');
-      if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Mesin OCR tidak bisa dimuat (butuh internet). Ketik kata manual di bawah.</p>';
-      if (camov) camov.innerHTML = '<span class="ovt">OCR tidak tersedia. Ketik kata manual.</span>';
+      if (ocrst) ocrst.textContent = 'Mode Manual';
     } finally {
+      if (roibox) setTimeout(function(){ if (roibox) roibox.classList.remove('active'); }, 220);
       ocrBusy = false;
     }
   }
 
-  on('manbtn', function(){ updateResult(document.getElementById('manin').value, 'Input Manual'); });
-  var manin = document.getElementById('manin');
-  if (manin) manin.oninput = function(){ updateResult(manin.value, 'Input Manual'); };
-
   async function startCamera(){
     stopCamera();
-    if (phase !== 'camera') setPhase('camera');
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      if (camov) camov.innerHTML = '<span class="ovt">Kamera tidak didukung. Tekan Ambil Foto atau Galeri untuk memilih foto.</span>';
-      setStatus('Tanpa Kamera');
+      if (camov) camov.innerHTML = '<span class="ovt">Kamera tidak didukung di peramban ini. Gunakan uji coba manual di bawah.</span>';
+      if (ocrst) ocrst.textContent = 'Tanpa Kamera';
       return;
     }
     try {
       camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
-      if (vid) { vid.srcObject = camStream; await vid.play(); }
-      if (camov) camov.innerHTML = '<span class="ovt">Arahkan kamera ke tulisan Latin lalu tekan Ambil Foto.</span>';
-      setStatus('Siap');
+      if (vid) {
+        vid.srcObject = camStream;
+        await vid.play();
+      }
+      if (camov) camov.innerHTML = renderOverlayGlyphs(activeSentence);
+      if (ocrst) ocrst.textContent = 'Menyiapkan OCR...';
+      scanTimer = setInterval(processFrame, 650);
     } catch(e) {
-      if (camov) camov.innerHTML = '<span class="ovt">Izin kamera ditolak / tidak tersedia. Tekan Ambil Foto atau Galeri untuk memilih foto.</span>';
-      setStatus('Tanpa Kamera');
+      if (camov) camov.innerHTML = '<span class="ovt">Izin kamera ditolak / tidak tersedia. Gunakan kotak ketik di bawah.</span>';
+      if (ocrst) ocrst.textContent = 'Izin Ditolak';
     }
   }
 
-  setPhase('camera');
   startCamera();
 }
 
