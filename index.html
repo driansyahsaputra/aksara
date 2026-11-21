@@ -577,8 +577,8 @@ function nav(tab){
   var items = [
     ['home','Beranda','home'],
     ['materi','Materi','book'],
-    ['scan','Pindai','cam'],
-    ['latihan','Latihan','pen'],
+    ['scan','Konversi','pen'],
+    ['latihan','Latihan','cards'],
     ['capaian','Capaian','trophy']
   ];
   return '<nav class="nav" aria-label="Navigasi utama">' + items.map(function(it){
@@ -588,7 +588,7 @@ function nav(tab){
 }
 
 function mount(tab, html){
-  if (tab !== 'scan') stopCamera();
+  // if (tab !== 'scan') stopCamera(); // Dinonaktifkan sementara (mode ketik manual)
   TAB = tab;
   app.innerHTML = '<div class="scr">' + html + '</div>' + nav(tab);
   bindSwitches();
@@ -607,14 +607,14 @@ function menu(){ shell(TAB); }
 // 4. HALAMAN AWAL (ONBOARDING DENGAN SLIDE-TO-START)
 // =========================================================================
 function onboard(){
-  stopCamera();
+  // stopCamera(); // Dinonaktifkan sementara
   var h = '<div class="onb"><div class="ohero" aria-hidden="true">' +
     '<svg class="dash" viewBox="0 0 360 340" preserveAspectRatio="none"><path d="M50 70 C 100 20, 170 110, 230 50 S 320 70 312 110"/><path d="M60 250 C 110 300, 230 300, 300 240"/><path d="M60 120 C 40 160, 50 200, 66 230"/></svg>' +
     '<span class="bd" style="left:8%;top:12%">' + g('ja') + '</span><span class="bd" style="right:7%;top:8%;width:60px;height:60px">' + g('nga') + '</span>' +
     '<span class="bd" style="left:6%;top:42%;width:44px;height:44px">' + g('ha') + '</span><span class="bd" style="right:10%;top:62%">' + g('ma') + '</span>' +
     '<span class="bd" style="left:14%;bottom:8%;width:46px;height:46px">' + g('wa') + '</span>' +
     '<div class="tile">' + g('ka') + '</div></div>' +
-    '<div class="otx"><span class="eyebrow">Kenali • Pindai • Tulis</span><h1>Belajar Aksara Lampung Lebih Mudah</h1><p class="muted">Kenali 20 huruf induk & anak huruf, pindai tulisan dengan kamera, lalu berlatih menulis.</p></div>' +
+    '<div class="otx"><span class="eyebrow">Kenali • Rangkai • Tulis</span><h1>Belajar Aksara Lampung Lebih Mudah</h1><p class="muted">Kenali 20 huruf induk & anak huruf, ubah teks ke aksara Lampung, lalu berlatih menulis.</p></div>' +
     '<div class="cta" id="cta" role="slider" tabindex="0" aria-label="Geser ke kanan untuk mulai belajar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
       '<div class="cgo" id="knob">' + ico('arrow', 22) + '</div>' +
       '<span class="ct" id="ctext">Mulai Belajar</span>' +
@@ -695,7 +695,7 @@ function home(){
   var h = '<header class="hd"><div><p class="muted">Selamat belajar</p><h1>Aksara Lampung</h1></div>' + swHtml() + '</header>';
   h += '<div class="car" id="car">' +
     '<div class="slide s1"><div><p class="k">Aksara hari ini</p><div class="big">' + NAMA[gid] + '</div><div class="row2"><button class="pill" id="s1go">Pelajari</button>' + (CAN_SPEAK ? '<button class="rb" id="s1sp" aria-label="Dengarkan ' + NAMA[gid] + '">' + ico('speaker', 20) + '</button>' : '') + '</div></div>' + g(gid, 'sg') + '</div>' +
-    '<div class="slide s2"><div style="flex:1"><p class="k">Fitur Kamera</p><div class="big" style="font-size:26px">Pindai Aksara</div><p class="sm">Arahkan kamera ke teks Latin, langsung diubah ke Aksara Lampung.</p><button class="pill" id="s2cam">Buka Kamera</button></div></div>' +
+    '<div class="slide s2"><div style="flex:1"><p class="k">Konversi Teks</p><div class="big" style="font-size:26px">Ketik & Ubah Aksara</div><p class="sm">Ketik kata Latin, langsung diubah ke Induk + Anak Aksara Lampung.</p><button class="pill" id="s2cam">Mulai Konversi</button></div></div>' +
     '<div class="slide s3"><div style="flex:1"><p class="k">Progres belajar</p><div class="big">' + sn + '<span>/20</span></div><p class="sm">aksara sudah dilihat</p><div class="bar w"><i style="width:' + (sn * 5) + '%"></i></div><button class="pill" id="s2go">Lihat capaian</button></div></div>' +
     '</div><div class="dots" aria-hidden="true"><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>';
 
@@ -713,7 +713,7 @@ function home(){
     return '<button class="li" id="' + id + '"><span class="th ic">' + ico(ic, 24) + '</span><span class="tx"><b>' + t + '</b><small>' + s + '</small></span><span class="ch">' + ico('chev', 20) + '</span></button>';
   }
   h += '<div class="sr"><h2 class="sh">Alat & Latihan</h2><button class="lnk" id="all">Lihat semua</button></div><div class="list">' +
-    row('rcam','Pindai Kamera (OCR)','Deteksi kata & ubah ke Induk + Anak Aksara','cam') +
+    row('rcam','Konversi Kata ke Aksara','Ketik kata & ubah ke Induk + Anak Aksara','pen') +
     row('r1','Kartu pasangan','Balik kartu, cocokkan aksara dengan nama','cards') +
     row('r2','Pasangkan aksara','Seret aksara ke nama yang cocok','drag') + '</div>';
 
@@ -888,7 +888,7 @@ function detail(id, auto){
 }
 
 // =========================================================================
-// 7. PIPELINE TESSERACT.JS (OCR KLASIK AKURASI TINGGI) -> KATA -> AKSARA
+// 7. KONVERSI & MAPPING KATA KE INDUK + ANAK AKSARA
 // =========================================================================
 var KAMUS_LAMPUNG = [
   "lampung","sai","bumi","ruwa","jurai","tabik","pun","api","kabar","sikam",
@@ -939,7 +939,7 @@ var CONSONANT_MAP = {
 
 function isVowel(ch){ return "aiueoé".indexOf(ch) !== -1; }
 
-// Normalisasi OCR: perbaiki kebingungan karakter klasik (0->o, 1->i/l, rn->m) & hilangkan vokal kembar bertemu
+// Normalisasi teks & penghilangan dua huruf vokal yang bertemu tanpa mengubah bunyi
 function normalizeOcrText(raw){
   return (raw || "")
     .toLowerCase()
@@ -1140,7 +1140,7 @@ function renderCompositeGlyph(u, mainSize, subSize){
 }
 
 function renderAksaraMapping(sentence){
-  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada teks terdeteksi. Arahkan kamera ke tulisan atau ketik kata di bawah.</p>';
+  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada kata yang dimasukkan. Ketik kata pada kotak di atas.</p>';
   var words = sentence.split(/\s+/).filter(Boolean);
   var html = '<div class="akstream">';
   words.forEach(function(w, wi){
@@ -1159,46 +1159,34 @@ function renderAksaraMapping(sentence){
   return html;
 }
 
-// =========================================================================
-// PRA-PEMROSESAN CITRA OTOMATIS (OTSU BINARIZATION + AUTO-INVERT + PADDING)
-// =========================================================================
+/* =========================================================================
+   BAGIAN SCAN KAMERA & TESSERACT OCR DI-HIDE / DI-COMMENT SEMENTARA
+   =========================================================================
 function preprocessRoiForTesseract(videoEl, canvasEl){
   var vw = videoEl.videoWidth, vh = videoEl.videoHeight;
   if (!vw || !vh) return false;
-
-  // Potong tepat di area bidik tengah (86% x 30%)
   var rx = Math.round(vw * 0.07), ry = Math.round(vh * 0.35);
   var rw = Math.round(vw * 0.86), rh = Math.round(vh * 0.30);
-
-  // Upscale 2x (minimal lebar 720px) + padding putih 24px agar tinggi karakter optimal bagi LSTM Tesseract
   var scale = Math.max(1.5, Math.min(2.5, 800 / rw));
   var tw = Math.round(rw * scale);
   var th = Math.round(rh * scale);
   var pad = 24;
-
   canvasEl.width = tw + pad * 2;
   canvasEl.height = th + pad * 2;
   var ctx = canvasEl.getContext('2d', { willReadFrequently: true });
-
-  // Isi latar putih bersih di sekeliling ROI
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
   ctx.drawImage(videoEl, rx, ry, rw, rh, pad, pad, tw, th);
-
   var imgData = ctx.getImageData(pad, pad, tw, th);
   var d = imgData.data;
   var total = tw * th;
   var gray = new Uint8Array(total);
   var hist = new Uint32Array(256);
-
-  // 1. Konversi Luminansi Rec.709 & hitung histogram
   for (var i = 0, p = 0; i < d.length; i += 4, p++) {
     var lum = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) | 0;
     gray[p] = lum;
     hist[lum]++;
   }
-
-  // 2. Metode Otsu untuk mencari ambang batas binerisasi optimal secara adaptif
   var sum = 0;
   for (var t = 0; t < 256; t++) sum += t * hist[t];
   var sumB = 0, wB = 0, wF = 0, maxVar = 0, threshold = 128;
@@ -1211,26 +1199,15 @@ function preprocessRoiForTesseract(videoEl, canvasEl){
     var mB = sumB / wB;
     var mF = (sum - sumB) / wF;
     var between = wB * wF * (mB - mF) * (mB - mF);
-    if (between > maxVar) {
-      maxVar = between;
-      threshold = t;
-    }
+    if (between > maxVar) { maxVar = between; threshold = t; }
   }
-
-  // 3. Cek polaritas latar: Tesseract klasik jauh lebih akurat pada teks hitam di atas latar putih
   var darkCount = 0;
-  for (var p = 0; p < total; p++) {
-    if (gray[p] < threshold) darkCount++;
-  }
-  var invert = darkCount > (total * 0.55); // Jika mayoritas gelap (teks terang di layar gelap), balik warna
-
+  for (var p = 0; p < total; p++) { if (gray[p] < threshold) darkCount++; }
+  var invert = darkCount > (total * 0.55);
   for (var i = 0, p = 0; i < d.length; i += 4, p++) {
     var isInk = invert ? (gray[p] >= threshold) : (gray[p] < threshold);
     var val = isInk ? 0 : 255;
-    d[i] = val;
-    d[i + 1] = val;
-    d[i + 2] = val;
-    d[i + 3] = 255;
+    d[i] = val; d[i + 1] = val; d[i + 2] = val; d[i + 3] = 255;
   }
   ctx.putImageData(imgData, pad, pad);
   return true;
@@ -1261,6 +1238,7 @@ function stopCamera(){
   }
   ocrBusy = false;
 }
+========================================================================= */
 
 function speakSentence(txt){
   if (!CAN_SPEAK || !txt) return;
@@ -1274,82 +1252,60 @@ function speakSentence(txt){
 
 function scan(){
   stopT();
-  scanPaused = false;
-  var scanFinalized = false;
-  var h = '<div class="pg"><h1>Pindai Aksara</h1><span class="badge" id="ocrst">Siap</span></div>' +
-    '<div class="cambox">' +
-      '<video id="camvid" autoplay playsinline muted></video>' +
-      '<div class="roimask"><div class="roibox" id="roibox"><span class="roilbl" id="roilbl">Sejajarkan 1 Baris Teks di Sini</span></div></div>' +
-    '</div>' +
-    '<div class="camctrl">' +
-      '<button class="btn alt" id="flipcam">' + ico('flip', 18) + 'Ganti Kamera</button>' +
-      '<button class="btn alt" id="pausecam">Kunci Hasil</button>' +
-      '<button class="btn" id="sayword">' + ico('speaker', 18) + 'Lafalkan</button>' +
-    '</div>' +
+  var h = '<div class="pg"><h1>Konversi Aksara</h1><span class="badge" id="ocrst">Mode Manual</span></div>' +
+    /* ---------------------------------------------------------------------
+       ANTARMUKA KAMERA LIVE DI-HIDE / DI-COMMENT SEMENTARA
+       <div class="cambox">
+         <video id="camvid" autoplay playsinline muted></video>
+         <div class="roimask"><div class="roibox" id="roibox"><span class="roilbl" id="roilbl">Sejajarkan 1 Baris Teks di Sini</span></div></div>
+       </div>
+       <div class="camctrl">
+         <button class="btn alt" id="flipcam">Ganti Kamera</button>
+         <button class="btn alt" id="pausecam">Kunci Hasil</button>
+         <button class="btn" id="sayword">Lafalkan</button>
+       </div>
+       --------------------------------------------------------------------- */
     '<div class="scancard">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-        '<h3 style="margin:0">1. Hasil Final OCR & Validasi Kamus</h3>' +
-        '<span class="badge" id="dictbadge">Menunggu Scan</span>' +
+      '<h3>1. Uji Coba Manual / Ketik Kata</h3>' +
+      '<div style="display:flex;gap:8px">' +
+        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham, pak..." value="tabik pun lampung">' +
+        '<button class="btn" id="manbtn" style="flex:none;padding:0 18px">Ubah</button>' +
       '</div>' +
-      '<div><small class="muted">Terbaca di Kamera:</small> <b id="rawtxt">-</b></div>' +
-      '<div style="margin-top:6px"><small class="muted">Kesimpulan Teks Final:</small> <b id="normtxt" style="color:var(--pri);font-size:18px">-</b></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px">' +
+        '<div><small class="muted">Hasil Normalisasi:</small> <b id="normtxt" style="color:var(--pri);font-size:18px">tabik pun lampung</b></div>' +
+        '<span class="badge" id="dictbadge">Valid Kamus</span>' +
+      '</div>' +
       '<div class="sugrow" id="sugrow"></div>' +
+      (CAN_SPEAK ? '<div style="margin-top:12px"><button class="btn alt" id="sayword" style="min-height:42px;padding:6px 16px;font-size:13px">' + ico('speaker', 18) + 'Lafalkan Teks</button></div>' : '') +
     '</div>' +
     '<div class="scancard">' +
       '<h3>2. Konversi & Mapping ke Induk + Anak Aksara</h3>' +
       '<div id="mapout">' + renderAksaraMapping("tabik pun lampung") + '</div>' +
-    '</div>' +
-    '<div class="scancard">' +
-      '<h3>Uji Coba Manual / Ketik Kata</h3>' +
-      '<div style="display:flex;gap:8px">' +
-        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham..." value="tabik pun lampung">' +
-        '<button class="btn" id="manbtn" style="flex:none;padding:0 18px">Ubah</button>' +
-      '</div>' +
     '</div>';
 
   mount('scan', h);
 
   var activeSentence = "tabik pun lampung";
-  var recentHistory = []; // Buffer voting untuk menyimpulkan hasil final
-  var vid = document.getElementById('camvid');
-  var ocrst = document.getElementById('ocrst');
-  var roibox = document.getElementById('roibox');
-  var roilbl = document.getElementById('roilbl');
-  var rawtxt = document.getElementById('rawtxt');
   var normtxt = document.getElementById('normtxt');
   var dictbadge = document.getElementById('dictbadge');
   var sugrow = document.getElementById('sugrow');
   var mapout = document.getElementById('mapout');
-  var pauseBtn = document.getElementById('pausecam');
 
-  function setFinalState(isFinal, statusText){
-    scanFinalized = isFinal;
-    scanPaused = isFinal;
-    if (roibox) {
-      roibox.classList.toggle('active', isFinal);
-      roibox.style.borderColor = isFinal ? 'var(--ok)' : '';
-    }
-    if (roilbl) {
-      roilbl.textContent = isFinal ? '✓ Teks Final Terkunci' : 'Sejajarkan 1 Baris Teks di Sini';
-    }
-    if (pauseBtn) {
-      pauseBtn.textContent = isFinal ? 'Pindai Ulang' : 'Kunci Hasil';
-      pauseBtn.classList.toggle('alt', !isFinal);
-    }
-    if (ocrst && statusText) ocrst.textContent = statusText;
-  }
-
-  function updateResult(raw, sourceLabel, conf, lockFinal){
+  function updateResult(raw, sourceLabel){
     var clean = normalizeOcrText(raw);
-    if (rawtxt) rawtxt.textContent = raw ? raw.trim() + (conf ? ' (' + Math.round(conf) + '%)' : '') : '-';
-    if (!clean) return;
+    if (!clean) {
+      activeSentence = "";
+      if (normtxt) normtxt.textContent = "-";
+      if (dictbadge) dictbadge.textContent = "Kosong";
+      if (mapout) mapout.innerHTML = renderAksaraMapping("");
+      if (sugrow) sugrow.innerHTML = "";
+      return;
+    }
     var chk = checkDictionary(clean);
     activeSentence = chk.corrected || clean;
     if (normtxt) normtxt.textContent = activeSentence;
     if (dictbadge) {
-      dictbadge.textContent = lockFinal
-        ? '✓ Final · ' + (chk.matched ? 'Valid Kamus' : sourceLabel)
-        : (chk.matched ? 'Kandidat Kamus' : (sourceLabel || 'Memproses...'));
+      dictbadge.textContent = chk.matched ? '✓ Valid Kamus' : (sourceLabel || 'Fonetis');
     }
     if (mapout) mapout.innerHTML = renderAksaraMapping(activeSentence);
     if (sugrow) {
@@ -1360,147 +1316,25 @@ function scan(){
         b.onclick = function(){
           var w = b.getAttribute('data-w');
           activeSentence = w;
-          normtxt.textContent = w;
-          mapout.innerHTML = renderAksaraMapping(w);
-          setFinalState(true, 'Final Terkunci');
-          if (dictbadge) dictbadge.textContent = '✓ Final · Dipilih Pengguna';
+          if (normtxt) normtxt.textContent = w;
+          if (mapout) mapout.innerHTML = renderAksaraMapping(w);
+          if (dictbadge) dictbadge.textContent = '✓ Dipilih Pengguna';
         };
       });
     }
-    if (lockFinal) {
-      setFinalState(true, 'Final · ' + (conf ? Math.round(conf) + '%' : 'Terkunci'));
-    }
   }
 
-  updateResult("tabik pun lampung", "Contoh Awal", 0, false);
+  updateResult("tabik pun lampung", "Contoh Awal");
 
   on('manbtn', function(){
     var v = document.getElementById('manin').value;
-    updateResult(v, "Input Manual", 100, true);
+    updateResult(v, "Input Manual");
   });
   var manin = document.getElementById('manin');
   if (manin) manin.oninput = function(){
-    updateResult(manin.value, "Input Manual", 0, false);
+    updateResult(manin.value, "Input Manual");
   };
   on('sayword', function(){ speakSentence(activeSentence); });
-
-  on('pausecam', function(){
-    if (scanFinalized) {
-      // Reset untuk memindai teks baru
-      recentHistory = [];
-      if (rawtxt) rawtxt.textContent = '-';
-      if (normtxt) normtxt.textContent = 'Memindai ulang...';
-      if (dictbadge) dictbadge.textContent = 'Memindai...';
-      setFinalState(false, 'Memindai...');
-    } else {
-      // Kunci hasil yang sedang tampil sebagai hasil final
-      setFinalState(true, 'Final Terkunci');
-      if (dictbadge) dictbadge.textContent = '✓ Final · Dikunci Manual';
-    }
-  });
-
-  on('flipcam', function(){
-    facing = (facing === 'environment') ? 'user' : 'environment';
-    recentHistory = [];
-    setFinalState(false, 'Mengganti kamera...');
-    startCamera();
-  });
-
-  var cropCanvas = document.createElement('canvas');
-
-  async function initOcr(){
-    if (ocrWorker) return ocrWorker;
-    if (ocrst) ocrst.textContent = 'Memuat Tesseract...';
-    var T = await loadTesseract();
-    if (!T) throw new Error('Tesseract tidak tersedia');
-    ocrWorker = await T.createWorker('ind+eng');
-    await ocrWorker.setParameters({
-      tessedit_pageseg_mode: '6',
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ',
-      load_system_dawg: '0',
-      load_freq_dawg: '0',
-      preserve_interword_spaces: '1'
-    });
-    return ocrWorker;
-  }
-
-  async function processFrame(){
-    if (TAB !== 'scan' || scanPaused || scanFinalized || ocrBusy || !vid || vid.readyState < 2) return;
-    ocrBusy = true;
-    try {
-      var okCrop = preprocessRoiForTesseract(vid, cropCanvas);
-      if (!okCrop) { ocrBusy = false; return; }
-
-      if (roibox) roibox.classList.add('active');
-      if (ocrst) ocrst.textContent = 'Menganalisis...';
-      var worker = await initOcr();
-      var res = await worker.recognize(cropCanvas);
-      if (scanPaused || scanFinalized) { ocrBusy = false; return; }
-
-      var data = res && res.data ? res.data : {};
-      var text = data.text || '';
-      var conf = typeof data.confidence === 'number' ? data.confidence : 0;
-      var clean = normalizeOcrText(text);
-
-      // Tahap penyimpulan hasil final dari akumulasi pembacaan stabil
-      if (clean.length >= 2 && conf >= 55) {
-        var chk = checkDictionary(clean);
-        var candidate = chk.corrected || clean;
-        recentHistory.push(candidate);
-        if (recentHistory.length > 5) recentHistory.shift();
-
-        var freq = 0;
-        for (var k = 0; k < recentHistory.length; k++) {
-          if (recentHistory[k] === candidate) freq++;
-        }
-
-        // Tampilkan progres kandidat sementara sebelum terkunci final
-        updateResult(text, 'Analisis (' + freq + '/3)', conf, false);
-
-        // Finalisasi & kunci otomatis jika:
-        // 1. Cocok kamus & muncul stabil minimal 2x (atau 1x dengan akurasi >= 78%)
-        // 2. Teks umum konsisten muncul 3x berturut-turut dengan confidence >= 65%
-        var isFinalMatch = (chk.matched && (freq >= 2 || conf >= 78)) || (freq >= 3 && conf >= 65);
-        if (isFinalMatch) {
-          updateResult(text, 'Tesseract OCR', conf, true);
-        } else if (ocrst && !scanPaused) {
-          ocrst.textContent = 'Menyimpulkan (' + freq + '/3)...';
-        }
-      } else if (ocrst && !scanPaused) {
-        ocrst.textContent = 'Mencari teks...';
-      }
-    } catch(err) {
-      if (ocrst) ocrst.textContent = 'Mode Manual';
-    } finally {
-      if (roibox && !scanFinalized) setTimeout(function(){ if (roibox && !scanFinalized) roibox.classList.remove('active'); }, 220);
-      ocrBusy = false;
-    }
-  }
-
-  async function startCamera(){
-    stopCamera();
-    setFinalState(false, 'Menyiapkan kamera...');
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      if (ocrst) ocrst.textContent = 'Kamera Tidak Didukung';
-      return;
-    }
-    try {
-      camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false
-      });
-      if (vid) {
-        vid.srcObject = camStream;
-        await vid.play();
-      }
-      if (ocrst) ocrst.textContent = 'Mencari teks...';
-      scanTimer = setInterval(processFrame, 550);
-    } catch(e) {
-      if (ocrst) ocrst.textContent = 'Izin Kamera Ditolak';
-    }
-  }
-
-  startCamera();
 }
 
 // =========================================================================
