@@ -268,14 +268,10 @@ button:focus-visible,.card:focus-visible,.ms:focus-visible,input:focus-visible{o
 /* Live Camera Scan & Anak Aksara Composite */
 .cambox{position:relative;width:100%;aspect-ratio:4/3;border-radius:24px;overflow:hidden;background:#111;box-shadow:var(--shadow);margin-bottom:12px}
 .cambox video{width:100%;height:100%;object-fit:cover;display:block}
-.cambox #capcv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;background:#111}
 .roimask{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;pointer-events:none}
-.roibox{width:84%;height:34%;border:2.5px solid var(--gold);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.48);position:relative;transition:border-color .2s}
+.roibox{width:86%;height:30%;border:2.5px solid var(--gold);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.52);position:relative;transition:border-color .2s}
 .roibox.active{border-color:#6fcf97}
-.roilbl{position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
-.camov{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(15,26,20,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:auto}
-.camov .ovg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.camov .ovt{font-size:12px;opacity:.9}
+.roilbl{position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.78);color:#fff;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
 .camctrl{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .camctrl .btn{flex:1;min-width:0;padding:8px 14px;font-size:13px;min-height:42px}
 .scancard{background:var(--card);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
@@ -407,8 +403,8 @@ var ANAK_CATALOG = [
   },
   {
     id:"nengen", nama:"Nengen", posisi:"Samping", bunyi:"Tanda mati (penghilang vokal)", baca:"mati",
-    bentuk:"Garis miring untuk mematikan bunyi vokal bawaan induk huruf.",
-    penggunaan:"Menghentikan bunyi vokal bawaan induk huruf sehingga hanya dibaca konsonannya. Contoh: Ha + Nengen dibaca 'h'. Untuk menyambung ke induk lain, induk bertanda Nengen diletakkan di urutan terakhir: Pa + Ka (Nengen) dibaca 'pak'."
+    bentuk:"Garis miring di depan/samping induk huruf untuk mematikan bunyi vokal bawaan.",
+    penggunaan:"Memberhentikan bunyi vokal induk huruf (misal: induk Ha diberi Nengen hanya dibaca 'h'). Jika digabung dengan huruf induk & anak huruf lain, huruf ber-Nengen diletakkan di urutan terakhir (misal: Pa + Ka + Nengen dibaca 'pak'). Pengecualian: Nengen tidak dipakai pada huruf ng, n, y, h, dan w."
   },
   {
     id:"bitan_o", nama:"Bitan (bunyi o)", posisi:"Bawah", bunyi:"o", baca:"o",
@@ -429,34 +425,24 @@ var ANAK_CATALOG = [
 
 var CONTOH_KATA = [
   {
+    kata:"pak",
+    arti:"Empat / Bapak (contoh urutan Nengen di akhir)",
+    penjelasan:"Penggabungan induk huruf Pa ('pa') dan induk huruf Ka yang diberi tanda mati Nengen ('k') diletakkan di urutan terakhir sehingga dibaca 'pak'."
+  },
+  {
     kata:"tabik pun",
     arti:"Salam hormat khas Lampung",
-    penjelasan:"'Ta' (induk Ta), 'bi' (Ba + Ulan i), lalu 'k' ditulis Ka + Nengen di urutan terakhir suku katanya. Kata 'pun': Pa + Bitan u ('pu') + Datas ('-n')."
+    penjelasan:"Suku kata 'ta' dan 'bi' (Ba + Ulan i), lalu 'k' dimatikan dengan Nengen di urutan akhir. Kata 'pun': Pa + Bitan u ('pu') + Datas ('-n')."
   },
   {
     kata:"sikam",
     arti:"Saya / aku (Bahasa Lampung)",
-    penjelasan:"'Si' (Sa + Ulan i), 'ka' (induk Ka bawaan 'a'), lalu 'm' ditulis Ma + Nengen di urutan terakhir."
+    penjelasan:"'Si' (Sa + Ulan i), 'ka' (induk Ka bawaan 'a'), dan 'm' diberi tanda mati Nengen di urutan terakhir."
   },
   {
     kata:"lampung",
     arti:"Nama provinsi / tanah Lampung",
-    penjelasan:"'La' (induk La), 'm' (Ma + Nengen), lalu 'pung' (Pa + Bitan u + Tekelubang -ng)."
-  },
-  {
-    kata:"pak",
-    arti:"Contoh penggabungan induk + Nengen",
-    penjelasan:"Pa digabung dengan Ka yang diberi Nengen. Induk bertanda Nengen diletakkan paling akhir, dibaca 'pak'."
-  },
-  {
-    kata:"saat",
-    arti:"Contoh dua vokal sama bertemu",
-    penjelasan:"'Sa' bertemu vokal 'a' lagi: dua vokal yang bertemu dilebur, induk A tidak ditulis. Lalu 't' = Ta + Nengen, dibaca 'sat'."
-  },
-  {
-    kata:"sai",
-    arti:"Satu / yang (Bahasa Lampung)",
-    penjelasan:"'Sa' (induk Sa bawaan 'a') dipadukan dengan anak huruf Tekelingai ('ai') menjadi 'sai'."
+    penjelasan:"'Lam' (La + vokal a + Ma mati Nengen) diikuti 'pung' (Pa + Bitan u + Tekelubang -ng)."
   }
 ];
 
@@ -709,7 +695,7 @@ function home(){
   var h = '<header class="hd"><div><p class="muted">Selamat belajar</p><h1>Aksara Lampung</h1></div>' + swHtml() + '</header>';
   h += '<div class="car" id="car">' +
     '<div class="slide s1"><div><p class="k">Aksara hari ini</p><div class="big">' + NAMA[gid] + '</div><div class="row2"><button class="pill" id="s1go">Pelajari</button>' + (CAN_SPEAK ? '<button class="rb" id="s1sp" aria-label="Dengarkan ' + NAMA[gid] + '">' + ico('speaker', 20) + '</button>' : '') + '</div></div>' + g(gid, 'sg') + '</div>' +
-    '<div class="slide s2"><div style="flex:1"><p class="k">Fitur Kamera</p><div class="big" style="font-size:26px">Pindai Aksara</div><p class="sm">Ambil foto teks Latin, sistem membaca lalu menerjemahkannya ke Aksara Lampung.</p><button class="pill" id="s2cam">Buka Kamera</button></div></div>' +
+    '<div class="slide s2"><div style="flex:1"><p class="k">Fitur Kamera</p><div class="big" style="font-size:26px">Pindai Aksara</div><p class="sm">Arahkan kamera ke teks Latin, langsung diubah ke Aksara Lampung.</p><button class="pill" id="s2cam">Buka Kamera</button></div></div>' +
     '<div class="slide s3"><div style="flex:1"><p class="k">Progres belajar</p><div class="big">' + sn + '<span>/20</span></div><p class="sm">aksara sudah dilihat</p><div class="bar w"><i style="width:' + (sn * 5) + '%"></i></div><button class="pill" id="s2go">Lihat capaian</button></div></div>' +
     '</div><div class="dots" aria-hidden="true"><i class="dot on"></i><i class="dot"></i><i class="dot"></i></div>';
 
@@ -727,7 +713,7 @@ function home(){
     return '<button class="li" id="' + id + '"><span class="th ic">' + ico(ic, 24) + '</span><span class="tx"><b>' + t + '</b><small>' + s + '</small></span><span class="ch">' + ico('chev', 20) + '</span></button>';
   }
   h += '<div class="sr"><h2 class="sh">Alat & Latihan</h2><button class="lnk" id="all">Lihat semua</button></div><div class="list">' +
-    row('rcam','Foto & Terjemahkan','Foto tulisan, cek kata, ubah ke Induk + Anak Aksara','cam') +
+    row('rcam','Pindai Kamera (OCR)','Deteksi kata & ubah ke Induk + Anak Aksara','cam') +
     row('r1','Kartu pasangan','Balik kartu, cocokkan aksara dengan nama','cards') +
     row('r2','Pasangkan aksara','Seret aksara ke nama yang cocok','drag') + '</div>';
 
@@ -783,19 +769,14 @@ function materi(){
     }).join('') + '</div>';
   } else if (MF === 'kombinasi') {
     h += '<div class="guidebox">' +
-      '<h2>Cara Membentuk Kata Sempurna</h2>' +
-      '<p>Kata Lampung terbentuk dari rangkaian <b>suku kata</b>. Tiap suku kata memadukan <b>Induk Aksara</b> (konsonan dasar/vokal awal) dengan <b>Anak Aksara</b> (pengubah vokal atau konsonan penutup).</p>' +
-      '<ol style="margin:0 0 6px;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.5">' +
-        '<li>Induk bertemu anak vokal tunggal (<b>i, e, o, u</b>) berubah bunyinya. Induk juga bisa digabung berurutan tanpa mengubah bunyi.</li>' +
-        '<li>Bila dua vokal sama bertemu, vokal kedua <b>dilebur</b> (induk A tidak ditulis lagi).</li>' +
-        '<li>Untuk menghentikan bunyi induk, tambahkan <b>Nengen</b>. Misal Ha + Nengen dibaca <b>h</b>.</li>' +
-        '<li>Saat menyambung, induk bertanda Nengen diletakkan di <b>urutan terakhir</b>. Misal Pa + Ka (Nengen) dibaca <b>pak</b>.</li>' +
-      '</ol>' +
+      '<h2>Kaidah Penggabungan Induk & Anak Aksara</h2>' +
+      '<p>1. <b>Vokal Tunggal & Penghilangan Vokal Bertemu:</b> Pertemuan induk huruf dengan anak huruf vokal tunggal (<i>i, e, é, u, o</i>) membedakan bunyi. Jika penggabungan tidak mengubah bunyi dan mempertemukan dua vokal kembar/bertemu, vokal ganda dihilangkan.<br>' +
+      '2. <b>Tanda Mati Nengen & Urutan Akhir:</b> Nengen diletakkan di depan induk huruf untuk mematikan vokalnya (contoh: <b>Ha + Nengen = h</b>). Saat disambung dengan induk & anak huruf lain, huruf ber-Nengen diletakkan di <b>urutan terakhir</b> (contoh: <b>Pa + Ka + Nengen = pak</b>).</p>' +
       '<div style="display:flex;gap:8px;margin-top:8px">' +
-        '<input type="text" id="simword" class="maninp" placeholder="Ketik kata bebas, misal: tabik pun" value="tabik pun">' +
+        '<input type="text" id="simword" class="maninp" placeholder="Coba ketik: pak, tabik pun, haah..." value="pak">' +
         '<button class="btn" id="simbtn" style="flex:none;padding:0 16px">Rangkai</button>' +
       '</div>' +
-      '<div id="simout" style="margin-top:10px">' + renderAksaraMapping("tabik pun") + '</div>' +
+      '<div id="simout" style="margin-top:10px">' + renderAksaraMapping("pak") + '</div>' +
     '</div>';
     h += '<h2 class="sh" style="margin-top:18px">Contoh Pembentukan Kata</h2>';
     CONTOH_KATA.forEach(function(ex, idx){
@@ -835,7 +816,7 @@ function materi(){
   function runSim(){
     if (!simin || !simout) return;
     var val = normalizeOcrText(simin.value);
-    simout.innerHTML = renderAksaraMapping(val || "tabik pun");
+    simout.innerHTML = renderAksaraMapping(val || "pak");
   }
   on('simbtn', runSim);
   if (simin) simin.oninput = runSim;
@@ -907,7 +888,7 @@ function detail(id, auto){
 }
 
 // =========================================================================
-// 7. PIPELINE CAMERA SCAN -> OCR -> CEK KATA -> KONVERSI & MAPPING AKSARA
+// 7. PIPELINE TESSERACT.JS (OCR KLASIK AKURASI TINGGI) -> KATA -> AKSARA
 // =========================================================================
 var KAMUS_LAMPUNG = [
   "lampung","sai","bumi","ruwa","jurai","tabik","pun","api","kabar","sikam",
@@ -924,7 +905,7 @@ var KAMUS_LAMPUNG = [
   "helau","balak","lunik","kejung","buntak","rea","keghing","basoh","panas",
   "ngison","manis","pahit","asin","masin","pedos","bangik","haga","kilu",
   "terima","kasih","selamat","pagi","siang","sore","malam","belajar","aksara",
-  "induk","anak","huruf","baca","tulis","suara","kata","bahasa","indonesia"
+  "induk","anak","huruf","baca","tulis","suara","kata","bahasa","indonesia","pak"
 ];
 
 var SANDANGAN_VOKAL = {
@@ -946,6 +927,9 @@ var SANDANGAN_KONSONAN = {
   "dead": {key:"nengen",     nama:"Nengen (mati)",    pos:"Samping"}
 };
 
+// Huruf yang tidak dapat dimatikan dengan tanda Nengen (ng, n, y, h, w)
+var NO_NENGEN = ["nga", "na", "ya", "ha", "wa"];
+
 var CONSONANT_MAP = {
   "ng":"nga","ny":"nya","gh":"gha","kh":"gha",
   "k":"ka","g":"ga","p":"pa","b":"ba","m":"ma","t":"ta","d":"da","n":"na",
@@ -955,10 +939,16 @@ var CONSONANT_MAP = {
 
 function isVowel(ch){ return "aiueoé".indexOf(ch) !== -1; }
 
+// Normalisasi OCR: perbaiki kebingungan karakter klasik (0->o, 1->i/l, rn->m) & hilangkan vokal kembar bertemu
 function normalizeOcrText(raw){
   return (raw || "")
     .toLowerCase()
+    .replace(/0/g, "o")
+    .replace(/[1|!]/g, "i")
+    .replace(/5/g, "s")
+    .replace(/8/g, "b")
     .replace(/[^a-z\u00e9\s]/g, " ")
+    .replace(/([aiueo\u00e9])\1+/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1024,26 +1014,51 @@ function checkDictionary(cleanText){
 }
 
 function wordToAksaraUnits(word){
-  var w = normalizeOcrText(word).replace(/\s+/g, "");
-  var units = [], i = 0, lastVowel = null, lastOpen = false;
+  var w = normalizeOcrText(word).replace(/\s+/g, "").replace(/([aiueo\u00e9])\1+/g, "$1");
+  var units = [];
+  var i = 0;
 
-  // Coda berupa anak huruf: -ng, -n, -r, dan -h (hanya setelah vokal a, Keleniah).
-  // Konsonan akhir lain (k, m, t, l, s, ...) ditulis sebagai induk sendiri + Nengen,
-  // diletakkan di urutan terakhir setelah suku katanya.
-  function checkCoda(idx, vowel){
-    if (idx >= w.length) return {coda:null, next:idx};
+  function checkCoda(idx){
+    if (idx >= w.length) return {coda:null, next:idx, deadUnit:null};
     if (w.slice(idx, idx + 2) === "ng") {
       if (idx + 2 >= w.length || !isVowel(w[idx + 2])) {
-        return {coda:SANDANGAN_KONSONAN["ng"], label:"ng", next:idx + 2};
+        return {coda:SANDANGAN_KONSONAN["ng"], label:"ng", next:idx + 2, deadUnit:null};
       }
-      return {coda:null, next:idx};
+      return {coda:null, next:idx, deadUnit:null};
     }
     var c1 = w[idx];
-    var ok = (c1 === "n" && w.slice(idx, idx + 2) !== "ny") || c1 === "r" || (c1 === "h" && vowel === "a");
-    if (ok && (idx + 1 >= w.length || !isVowel(w[idx + 1]))) {
-      return {coda:SANDANGAN_KONSONAN[c1], label:c1, next:idx + 1};
+    if (!isVowel(c1)) {
+      if (idx + 1 >= w.length || !isVowel(w[idx + 1])) {
+        if (SANDANGAN_KONSONAN[c1]) {
+          return {coda:SANDANGAN_KONSONAN[c1], label:c1, next:idx + 1, deadUnit:null};
+        }
+        var deadId = CONSONANT_MAP[c1] || "ka";
+        if (NO_NENGEN.indexOf(deadId) !== -1) {
+          return {
+            coda:null,
+            label:c1,
+            next:idx + 1,
+            deadUnit:{
+              induk:deadId,
+              suku:c1,
+              anak:[{key:null, nama:"Tanpa Nengen (pengecualian)", pos:"Samping"}]
+            }
+          };
+        }
+        // Huruf yang diberi Nengen diletakkan sebagai unit di urutan terakhir suku kata (misal: pa + ka + nengen = pak)
+        return {
+          coda:null,
+          label:c1,
+          next:idx + 1,
+          deadUnit:{
+            induk:deadId,
+            suku:c1,
+            anak:[SANDANGAN_KONSONAN["dead"]]
+          }
+        };
+      }
     }
-    return {coda:null, next:idx};
+    return {coda:null, next:idx, deadUnit:null};
   }
 
   while (i < w.length) {
@@ -1052,21 +1067,16 @@ function wordToAksaraUnits(word){
       var vLen = 1;
       var diph = w.slice(i, i + 2);
       if (diph === "ai" || diph === "au") { v = diph; vLen = 2; }
-      // Dua vokal sama bertemu: vokal kedua dilebur (induk A tidak ditulis lagi)
-      if (lastOpen && lastVowel === v && units.length) {
-        units[units.length - 1].lebur = v;
-        i += vLen;
-        continue;
-      }
-      var cInfo = checkCoda(i + vLen, v);
+      while (i + vLen < w.length && isVowel(w[i + vLen])) { vLen++; }
+      var cInfo = checkCoda(i + vLen);
       var anakList = [SANDANGAN_VOKAL[v]];
       if (cInfo.coda) anakList.push(cInfo.coda);
       units.push({
         induk:"a",
-        suku:v + (cInfo.label || ""),
+        suku:v + (cInfo.coda ? cInfo.label : ""),
         anak:anakList
       });
-      lastVowel = v; lastOpen = !cInfo.coda;
+      if (cInfo.deadUnit) units.push(cInfo.deadUnit);
       i = cInfo.next;
       continue;
     }
@@ -1084,24 +1094,26 @@ function wordToAksaraUnits(word){
       var v2Len = 1;
       var diph2 = w.slice(i + cLen, i + cLen + 2);
       if (diph2 === "ai" || diph2 === "au") { v2 = diph2; v2Len = 2; }
-      var cInfo2 = checkCoda(i + cLen + v2Len, v2);
+      while (i + cLen + v2Len < w.length && isVowel(w[i + cLen + v2Len])) { v2Len++; }
+      var cInfo2 = checkCoda(i + cLen + v2Len);
       var anakList2 = [SANDANGAN_VOKAL[v2]];
       if (cInfo2.coda) anakList2.push(cInfo2.coda);
       units.push({
         induk:baseId,
-        suku:cons + v2 + (cInfo2.label || ""),
+        suku:cons + v2 + (cInfo2.coda ? cInfo2.label : ""),
         anak:anakList2
       });
-      lastVowel = v2; lastOpen = !cInfo2.coda;
+      if (cInfo2.deadUnit) units.push(cInfo2.deadUnit);
       i = cInfo2.next;
     } else {
-      // Konsonan mati: induk + Nengen (berlaku untuk semua induk, termasuk ha, na, nga, ya, wa)
+      var anakDead = (NO_NENGEN.indexOf(baseId) !== -1)
+        ? [{key:null, nama:"Tanpa Nengen (pengecualian)", pos:"Samping"}]
+        : [SANDANGAN_KONSONAN["dead"]];
       units.push({
         induk:baseId,
         suku:cons,
-        anak:[SANDANGAN_KONSONAN["dead"]]
+        anak:anakDead
       });
-      lastVowel = null; lastOpen = false;
       i += cLen;
     }
   }
@@ -1128,7 +1140,7 @@ function renderCompositeGlyph(u, mainSize, subSize){
 }
 
 function renderAksaraMapping(sentence){
-  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada teks. Ambil foto tulisan Latin atau ketik kata manual.</p>';
+  if (!sentence) return '<p class="muted" style="margin:0;font-size:13px">Belum ada teks terdeteksi. Arahkan kamera ke tulisan atau ketik kata di bawah.</p>';
   var words = sentence.split(/\s+/).filter(Boolean);
   var html = '<div class="akstream">';
   words.forEach(function(w, wi){
@@ -1139,7 +1151,7 @@ function renderAksaraMapping(sentence){
       html += '<div class="akunit" title="Suku kata: ' + u.suku + ' (' + tanda + ')">' +
         renderCompositeGlyph(u, 44, 16) +
         '<b>' + u.suku + '</b>' +
-        '<small>Induk: ' + NAMA[u.induk] + '<br>' + tanda + (u.lebur ? '<br><i>vokal “' + u.lebur + '” dilebur</i>' : '') + '</small>' +
+        '<small>Induk: ' + NAMA[u.induk] + '<br>' + tanda + '</small>' +
       '</div>';
     });
   });
@@ -1147,19 +1159,81 @@ function renderAksaraMapping(sentence){
   return html;
 }
 
-function renderOverlayGlyphs(sentence){
-  if (!sentence) return '<span class="ovt">Arahkan kamera ke tulisan lalu tekan Ambil Foto.</span>';
-  var words = sentence.split(/\s+/).filter(Boolean).slice(0, 3);
-  var glyphs = '';
-  words.forEach(function(w){
-    wordToAksaraUnits(w).forEach(function(u){
-      glyphs += '<span style="display:inline-flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.14);padding:5px 7px;border-radius:10px">' +
-        '<span style="color:#e9a23b;display:inline-flex">' + renderCompositeGlyph(u, 26, 11) + '</span>' +
-        '<span style="font-size:10px;line-height:1.1;margin-top:2px">' + u.suku + '</span>' +
-      '</span>';
-    });
-  });
-  return '<div class="ovg">' + glyphs + '</div><span class="ovt" style="font-weight:700;color:#e9a23b">' + sentence + '</span>';
+// =========================================================================
+// PRA-PEMROSESAN CITRA OTOMATIS (OTSU BINARIZATION + AUTO-INVERT + PADDING)
+// =========================================================================
+function preprocessRoiForTesseract(videoEl, canvasEl){
+  var vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+  if (!vw || !vh) return false;
+
+  // Potong tepat di area bidik tengah (86% x 30%)
+  var rx = Math.round(vw * 0.07), ry = Math.round(vh * 0.35);
+  var rw = Math.round(vw * 0.86), rh = Math.round(vh * 0.30);
+
+  // Upscale 2x (minimal lebar 720px) + padding putih 24px agar tinggi karakter optimal bagi LSTM Tesseract
+  var scale = Math.max(1.5, Math.min(2.5, 800 / rw));
+  var tw = Math.round(rw * scale);
+  var th = Math.round(rh * scale);
+  var pad = 24;
+
+  canvasEl.width = tw + pad * 2;
+  canvasEl.height = th + pad * 2;
+  var ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+
+  // Isi latar putih bersih di sekeliling ROI
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
+  ctx.drawImage(videoEl, rx, ry, rw, rh, pad, pad, tw, th);
+
+  var imgData = ctx.getImageData(pad, pad, tw, th);
+  var d = imgData.data;
+  var total = tw * th;
+  var gray = new Uint8Array(total);
+  var hist = new Uint32Array(256);
+
+  // 1. Konversi Luminansi Rec.709 & hitung histogram
+  for (var i = 0, p = 0; i < d.length; i += 4, p++) {
+    var lum = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) | 0;
+    gray[p] = lum;
+    hist[lum]++;
+  }
+
+  // 2. Metode Otsu untuk mencari ambang batas binerisasi optimal secara adaptif
+  var sum = 0;
+  for (var t = 0; t < 256; t++) sum += t * hist[t];
+  var sumB = 0, wB = 0, wF = 0, maxVar = 0, threshold = 128;
+  for (var t = 0; t < 256; t++) {
+    wB += hist[t];
+    if (wB === 0) continue;
+    wF = total - wB;
+    if (wF === 0) break;
+    sumB += t * hist[t];
+    var mB = sumB / wB;
+    var mF = (sum - sumB) / wF;
+    var between = wB * wF * (mB - mF) * (mB - mF);
+    if (between > maxVar) {
+      maxVar = between;
+      threshold = t;
+    }
+  }
+
+  // 3. Cek polaritas latar: Tesseract klasik jauh lebih akurat pada teks hitam di atas latar putih
+  var darkCount = 0;
+  for (var p = 0; p < total; p++) {
+    if (gray[p] < threshold) darkCount++;
+  }
+  var invert = darkCount > (total * 0.55); // Jika mayoritas gelap (teks terang di layar gelap), balik warna
+
+  for (var i = 0, p = 0; i < d.length; i += 4, p++) {
+    var isInk = invert ? (gray[p] >= threshold) : (gray[p] < threshold);
+    var val = isInk ? 0 : 255;
+    d[i] = val;
+    d[i + 1] = val;
+    d[i + 2] = val;
+    d[i + 3] = 255;
+  }
+  ctx.putImageData(imgData, pad, pad);
+  return true;
 }
 
 var camStream = null, scanTimer = null, ocrWorker = null, ocrBusy = false, scanPaused = false, facing = 'environment';
@@ -1200,207 +1274,214 @@ function speakSentence(txt){
 
 function scan(){
   stopT();
-  var phase = 'camera', activeSentence = '';
+  scanPaused = false;
+  var scanFinalized = false;
   var h = '<div class="pg"><h1>Pindai Aksara</h1><span class="badge" id="ocrst">Siap</span></div>' +
     '<div class="cambox">' +
       '<video id="camvid" autoplay playsinline muted></video>' +
-      '<canvas id="capcv"></canvas>' +
-      '<div class="camov" id="camov"><span class="ovt">Memulai kamera...</span></div>' +
+      '<div class="roimask"><div class="roibox" id="roibox"><span class="roilbl" id="roilbl">Sejajarkan 1 Baris Teks di Sini</span></div></div>' +
     '</div>' +
-    '<div class="camctrl" id="ctrl"></div>' +
-    '<input type="file" id="fcam" accept="image/*" capture="environment" hidden>' +
-    '<input type="file" id="fgal" accept="image/*" hidden>' +
+    '<div class="camctrl">' +
+      '<button class="btn alt" id="flipcam">' + ico('flip', 18) + 'Ganti Kamera</button>' +
+      '<button class="btn alt" id="pausecam">Kunci Hasil</button>' +
+      '<button class="btn" id="sayword">' + ico('speaker', 18) + 'Lafalkan</button>' +
+    '</div>' +
     '<div class="scancard">' +
-      '<h3>1. Hasil Analisa Foto & Pengecekan Kamus</h3>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
-        '<div><small class="muted">Teks terbaca:</small> <b id="rawtxt">-</b></div>' +
-        '<span class="badge" id="dictbadge">Kamus</span>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+        '<h3 style="margin:0">1. Hasil Final OCR & Validasi Kamus</h3>' +
+        '<span class="badge" id="dictbadge">Menunggu Scan</span>' +
       '</div>' +
-      '<div style="margin-top:6px"><small class="muted">Setelah pengecekan:</small> <b id="normtxt" style="color:var(--pri);font-size:17px">-</b></div>' +
+      '<div><small class="muted">Terbaca di Kamera:</small> <b id="rawtxt">-</b></div>' +
+      '<div style="margin-top:6px"><small class="muted">Kesimpulan Teks Final:</small> <b id="normtxt" style="color:var(--pri);font-size:18px">-</b></div>' +
       '<div class="sugrow" id="sugrow"></div>' +
     '</div>' +
     '<div class="scancard">' +
-      '<h3>2. Terjemahan ke Aksara Lampung (Induk + Anak)</h3>' +
-      '<div id="mapout">' + renderAksaraMapping("") + '</div>' +
+      '<h3>2. Konversi & Mapping ke Induk + Anak Aksara</h3>' +
+      '<div id="mapout">' + renderAksaraMapping("tabik pun lampung") + '</div>' +
     '</div>' +
     '<div class="scancard">' +
-      '<h3>Atau ketik kata manual</h3>' +
+      '<h3>Uji Coba Manual / Ketik Kata</h3>' +
       '<div style="display:flex;gap:8px">' +
-        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham...">' +
+        '<input type="text" id="manin" class="maninp" placeholder="Contoh: tabik pun, sikam, gham..." value="tabik pun lampung">' +
         '<button class="btn" id="manbtn" style="flex:none;padding:0 18px">Ubah</button>' +
       '</div>' +
     '</div>';
 
   mount('scan', h);
 
+  var activeSentence = "tabik pun lampung";
+  var recentHistory = []; // Buffer voting untuk menyimpulkan hasil final
   var vid = document.getElementById('camvid');
-  var capcv = document.getElementById('capcv');
   var ocrst = document.getElementById('ocrst');
-  var camov = document.getElementById('camov');
-  var ctrl = document.getElementById('ctrl');
+  var roibox = document.getElementById('roibox');
+  var roilbl = document.getElementById('roilbl');
   var rawtxt = document.getElementById('rawtxt');
   var normtxt = document.getElementById('normtxt');
   var dictbadge = document.getElementById('dictbadge');
   var sugrow = document.getElementById('sugrow');
   var mapout = document.getElementById('mapout');
-  var fcam = document.getElementById('fcam');
-  var fgal = document.getElementById('fgal');
-  var MAXD = 1600;
+  var pauseBtn = document.getElementById('pausecam');
 
-  function setStatus(t){ if (ocrst) ocrst.textContent = t; }
-
-  function showResult(sentence, rawLabel){
-    activeSentence = sentence;
-    if (normtxt) normtxt.textContent = sentence || '-';
-    if (camov) camov.innerHTML = sentence ? '<span class="ovt" style="font-weight:700;color:#e9a23b">' + sentence + '</span>' : '<span class="ovt">Belum ada teks.</span>';
-    if (mapout) mapout.innerHTML = renderAksaraMapping(sentence);
+  function setFinalState(isFinal, statusText){
+    scanFinalized = isFinal;
+    scanPaused = isFinal;
+    if (roibox) {
+      roibox.classList.toggle('active', isFinal);
+      roibox.style.borderColor = isFinal ? 'var(--ok)' : '';
+    }
+    if (roilbl) {
+      roilbl.textContent = isFinal ? '✓ Teks Final Terkunci' : 'Sejajarkan 1 Baris Teks di Sini';
+    }
+    if (pauseBtn) {
+      pauseBtn.textContent = isFinal ? 'Pindai Ulang' : 'Kunci Hasil';
+      pauseBtn.classList.toggle('alt', !isFinal);
+    }
+    if (ocrst && statusText) ocrst.textContent = statusText;
   }
 
-  function updateResult(raw, sourceLabel){
+  function updateResult(raw, sourceLabel, conf, lockFinal){
     var clean = normalizeOcrText(raw);
-    if (rawtxt) rawtxt.textContent = raw ? raw.replace(/\s+/g, ' ').trim() : '-';
-    if (!clean) { showResult('', ''); if (sugrow) sugrow.innerHTML = ''; return false; }
+    if (rawtxt) rawtxt.textContent = raw ? raw.trim() + (conf ? ' (' + Math.round(conf) + '%)' : '') : '-';
+    if (!clean) return;
     var chk = checkDictionary(clean);
-    showResult(chk.corrected || clean);
-    if (dictbadge) dictbadge.textContent = chk.matched ? 'Cocok Kamus' : (sourceLabel || 'Fonetis');
+    activeSentence = chk.corrected || clean;
+    if (normtxt) normtxt.textContent = activeSentence;
+    if (dictbadge) {
+      dictbadge.textContent = lockFinal
+        ? '✓ Final · ' + (chk.matched ? 'Valid Kamus' : sourceLabel)
+        : (chk.matched ? 'Kandidat Kamus' : (sourceLabel || 'Memproses...'));
+    }
+    if (mapout) mapout.innerHTML = renderAksaraMapping(activeSentence);
     if (sugrow) {
-      sugrow.innerHTML = chk.suggestions.map(function(sg){
-        return '<button class="sugchip' + (activeSentence.indexOf(sg.word) !== -1 ? ' on' : '') + '" data-w="' + sg.word + '">' + sg.word + '</button>';
+      sugrow.innerHTML = chk.suggestions.map(function(s){
+        return '<button class="sugchip' + (activeSentence.indexOf(s.word) !== -1 ? ' on' : '') + '" data-w="' + s.word + '">' + s.word + '</button>';
       }).join('');
       Array.prototype.forEach.call(sugrow.querySelectorAll('.sugchip'), function(b){
-        b.onclick = function(){ showResult(b.getAttribute('data-w')); };
+        b.onclick = function(){
+          var w = b.getAttribute('data-w');
+          activeSentence = w;
+          normtxt.textContent = w;
+          mapout.innerHTML = renderAksaraMapping(w);
+          setFinalState(true, 'Final Terkunci');
+          if (dictbadge) dictbadge.textContent = '✓ Final · Dipilih Pengguna';
+        };
       });
     }
-    return true;
+    if (lockFinal) {
+      setFinalState(true, 'Final · ' + (conf ? Math.round(conf) + '%' : 'Terkunci'));
+    }
   }
 
-  function setPhase(ph){
-    phase = ph;
-    vid.style.display = ph === 'camera' ? 'block' : 'none';
-    capcv.style.display = ph === 'result' ? 'block' : 'none';
-    if (ph === 'camera') {
-      ctrl.innerHTML =
-        '<button class="btn alt" id="flipcam">' + ico('flip', 18) + 'Ganti</button>' +
-        '<button class="btn" id="shutter" style="flex:2">' + ico('cam', 18) + 'Ambil Foto</button>' +
-        '<button class="btn alt" id="gal">Galeri</button>';
-      on('flipcam', function(){ facing = (facing === 'environment') ? 'user' : 'environment'; startCamera(); });
-      on('shutter', function(){
-        if (camStream && vid.readyState >= 2 && vid.videoWidth) captureVideo();
-        else fcam.click();
-      });
-      on('gal', function(){ fgal.click(); });
+  updateResult("tabik pun lampung", "Contoh Awal", 0, false);
+
+  on('manbtn', function(){
+    var v = document.getElementById('manin').value;
+    updateResult(v, "Input Manual", 100, true);
+  });
+  var manin = document.getElementById('manin');
+  if (manin) manin.oninput = function(){
+    updateResult(manin.value, "Input Manual", 0, false);
+  };
+  on('sayword', function(){ speakSentence(activeSentence); });
+
+  on('pausecam', function(){
+    if (scanFinalized) {
+      // Reset untuk memindai teks baru
+      recentHistory = [];
+      if (rawtxt) rawtxt.textContent = '-';
+      if (normtxt) normtxt.textContent = 'Memindai ulang...';
+      if (dictbadge) dictbadge.textContent = 'Memindai...';
+      setFinalState(false, 'Memindai...');
     } else {
-      ctrl.innerHTML =
-        '<button class="btn alt" id="retake">' + ico('flip', 18) + 'Foto Ulang</button>' +
-        '<button class="btn" id="sayword">' + ico('speaker', 18) + 'Lafalkan</button>';
-      on('retake', function(){
-        setPhase('camera');
-        setStatus(camStream ? 'Siap' : 'Tanpa Kamera');
-        camov.innerHTML = '<span class="ovt">' + (camStream ? 'Arahkan kamera ke tulisan lalu tekan Ambil Foto.' : 'Kamera tidak tersedia. Tekan Ambil Foto atau Galeri untuk memilih foto.') + '</span>';
-        if (camStream) vid.play();
-      });
-      on('sayword', function(){ speakSentence(activeSentence); });
+      // Kunci hasil yang sedang tampil sebagai hasil final
+      setFinalState(true, 'Final Terkunci');
+      if (dictbadge) dictbadge.textContent = '✓ Final · Dikunci Manual';
     }
-  }
+  });
 
-  function drawToCanvas(src, sw, sh){
-    var sc = Math.min(1, MAXD / Math.max(sw, sh));
-    capcv.width = Math.round(sw * sc);
-    capcv.height = Math.round(sh * sc);
-    var cx = capcv.getContext('2d');
-    cx.filter = 'none';
-    cx.drawImage(src, 0, 0, capcv.width, capcv.height);
-  }
+  on('flipcam', function(){
+    facing = (facing === 'environment') ? 'user' : 'environment';
+    recentHistory = [];
+    setFinalState(false, 'Mengganti kamera...');
+    startCamera();
+  });
 
-  function captureVideo(){
-    drawToCanvas(vid, vid.videoWidth, vid.videoHeight);
-    try { vid.pause(); } catch(e) {}
-    analyze();
-  }
-
-  function loadFile(f){
-    if (!f) return;
-    setStatus('Membuka foto...');
-    var url = URL.createObjectURL(f);
-    var im = new Image();
-    im.onload = function(){
-      drawToCanvas(im, im.naturalWidth, im.naturalHeight);
-      URL.revokeObjectURL(url);
-      analyze();
-    };
-    im.onerror = function(){ URL.revokeObjectURL(url); setStatus('Foto gagal'); };
-    im.src = url;
-  }
-  fcam.onchange = function(){ loadFile(fcam.files[0]); fcam.value = ''; };
-  fgal.onchange = function(){ loadFile(fgal.files[0]); fgal.value = ''; };
+  var cropCanvas = document.createElement('canvas');
 
   async function initOcr(){
     if (ocrWorker) return ocrWorker;
-    setStatus('Memuat OCR...');
+    if (ocrst) ocrst.textContent = 'Memuat Tesseract...';
     var T = await loadTesseract();
     if (!T) throw new Error('Tesseract tidak tersedia');
-    ocrWorker = await T.createWorker('ind+eng', 1, {
-      logger: function(m){
-        if (m && m.status === 'recognizing text' && typeof m.progress === 'number') {
-          setStatus('Membaca ' + Math.round(m.progress * 100) + '%');
-        }
-      }
-    });
+    ocrWorker = await T.createWorker('ind+eng');
     await ocrWorker.setParameters({
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '
+      tessedit_pageseg_mode: '6',
+      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ',
+      load_system_dawg: '0',
+      load_freq_dawg: '0',
+      preserve_interword_spaces: '1'
     });
     return ocrWorker;
   }
 
-  async function analyze(){
-    if (ocrBusy) return;
+  async function processFrame(){
+    if (TAB !== 'scan' || scanPaused || scanFinalized || ocrBusy || !vid || vid.readyState < 2) return;
     ocrBusy = true;
-    setPhase('result');
-    if (rawtxt) rawtxt.textContent = '-';
-    if (normtxt) normtxt.textContent = '-';
-    if (sugrow) sugrow.innerHTML = '';
-    if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Menganalisa foto...</p>';
-    if (camov) camov.innerHTML = '<span class="ovt">Menganalisa foto...</span>';
     try {
-      var tmp = document.createElement('canvas');
-      tmp.width = capcv.width; tmp.height = capcv.height;
-      var tx = tmp.getContext('2d');
-      tx.filter = 'grayscale(100%) contrast(140%)';
-      tx.drawImage(capcv, 0, 0);
+      var okCrop = preprocessRoiForTesseract(vid, cropCanvas);
+      if (!okCrop) { ocrBusy = false; return; }
+
+      if (roibox) roibox.classList.add('active');
+      if (ocrst) ocrst.textContent = 'Menganalisis...';
       var worker = await initOcr();
-      setStatus('Membaca...');
-      var res = await worker.recognize(tmp);
-      var text = res && res.data ? res.data.text : '';
-      var words = normalizeOcrText(text).split(' ').filter(function(w){ return w.length >= 2; }).slice(0, 12);
-      if (words.length) {
-        updateResult(words.join(' '), 'Hasil Foto');
-        setStatus('Selesai');
-      } else {
-        showResult('');
-        if (rawtxt) rawtxt.textContent = '-';
-        if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Tidak ada kata terbaca. Coba foto ulang lebih dekat dan terang, atau ketik kata manual.</p>';
-        if (camov) camov.innerHTML = '<span class="ovt">Tidak ada kata terbaca. Tekan Foto Ulang.</span>';
-        setStatus('Tidak ada teks');
+      var res = await worker.recognize(cropCanvas);
+      if (scanPaused || scanFinalized) { ocrBusy = false; return; }
+
+      var data = res && res.data ? res.data : {};
+      var text = data.text || '';
+      var conf = typeof data.confidence === 'number' ? data.confidence : 0;
+      var clean = normalizeOcrText(text);
+
+      // Tahap penyimpulan hasil final dari akumulasi pembacaan stabil
+      if (clean.length >= 2 && conf >= 55) {
+        var chk = checkDictionary(clean);
+        var candidate = chk.corrected || clean;
+        recentHistory.push(candidate);
+        if (recentHistory.length > 5) recentHistory.shift();
+
+        var freq = 0;
+        for (var k = 0; k < recentHistory.length; k++) {
+          if (recentHistory[k] === candidate) freq++;
+        }
+
+        // Tampilkan progres kandidat sementara sebelum terkunci final
+        updateResult(text, 'Analisis (' + freq + '/3)', conf, false);
+
+        // Finalisasi & kunci otomatis jika:
+        // 1. Cocok kamus & muncul stabil minimal 2x (atau 1x dengan akurasi >= 78%)
+        // 2. Teks umum konsisten muncul 3x berturut-turut dengan confidence >= 65%
+        var isFinalMatch = (chk.matched && (freq >= 2 || conf >= 78)) || (freq >= 3 && conf >= 65);
+        if (isFinalMatch) {
+          updateResult(text, 'Tesseract OCR', conf, true);
+        } else if (ocrst && !scanPaused) {
+          ocrst.textContent = 'Menyimpulkan (' + freq + '/3)...';
+        }
+      } else if (ocrst && !scanPaused) {
+        ocrst.textContent = 'Mencari teks...';
       }
     } catch(err) {
-      setStatus('Mode Manual');
-      if (mapout) mapout.innerHTML = '<p class="muted" style="margin:0;font-size:13px">Mesin OCR tidak bisa dimuat (butuh internet). Ketik kata manual di bawah.</p>';
-      if (camov) camov.innerHTML = '<span class="ovt">OCR tidak tersedia. Ketik kata manual.</span>';
+      if (ocrst) ocrst.textContent = 'Mode Manual';
     } finally {
+      if (roibox && !scanFinalized) setTimeout(function(){ if (roibox && !scanFinalized) roibox.classList.remove('active'); }, 220);
       ocrBusy = false;
     }
   }
 
-  on('manbtn', function(){ updateResult(document.getElementById('manin').value, 'Input Manual'); });
-  var manin = document.getElementById('manin');
-  if (manin) manin.oninput = function(){ updateResult(manin.value, 'Input Manual'); };
-
   async function startCamera(){
     stopCamera();
-    if (phase !== 'camera') setPhase('camera');
+    setFinalState(false, 'Menyiapkan kamera...');
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      if (camov) camov.innerHTML = '<span class="ovt">Kamera tidak didukung. Tekan Ambil Foto atau Galeri untuk memilih foto.</span>';
-      setStatus('Tanpa Kamera');
+      if (ocrst) ocrst.textContent = 'Kamera Tidak Didukung';
       return;
     }
     try {
@@ -1408,16 +1489,17 @@ function scan(){
         video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false
       });
-      if (vid) { vid.srcObject = camStream; await vid.play(); }
-      if (camov) camov.innerHTML = '<span class="ovt">Arahkan kamera ke tulisan Latin lalu tekan Ambil Foto.</span>';
-      setStatus('Siap');
+      if (vid) {
+        vid.srcObject = camStream;
+        await vid.play();
+      }
+      if (ocrst) ocrst.textContent = 'Mencari teks...';
+      scanTimer = setInterval(processFrame, 550);
     } catch(e) {
-      if (camov) camov.innerHTML = '<span class="ovt">Izin kamera ditolak / tidak tersedia. Tekan Ambil Foto atau Galeri untuk memilih foto.</span>';
-      setStatus('Tanpa Kamera');
+      if (ocrst) ocrst.textContent = 'Izin Kamera Ditolak';
     }
   }
 
-  setPhase('camera');
   startCamera();
 }
 
