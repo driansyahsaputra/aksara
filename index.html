@@ -58,7 +58,8 @@ button:focus-visible,.card:focus-visible,.ms:focus-visible,input:focus-visible{o
 .btn.big{width:100%;min-height:54px;font-size:16px}
 .act2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .act2 .wide{grid-column:1/-1}
-.top{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding:8px 0;margin-bottom:12px}
+.top{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding:8px 0;margin-bottom:12px;transition:box-shadow .25s}
+.top.stuck{box-shadow:0 12px 14px -14px rgba(37,51,43,.5)}
 .stat{flex:1;text-align:right;font-weight:600;font-size:14px}
 #back{font-size:0;width:44px;min-height:44px;height:44px;padding:0;border-radius:50%;flex:none;background:var(--card);color:var(--ink);border:1px solid var(--line);position:relative;box-shadow:var(--shadow)}
 #back::before{content:"";position:absolute;inset:0;margin:auto;width:22px;height:22px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center/contain no-repeat}
@@ -303,10 +304,25 @@ button:focus-visible,.card:focus-visible,.ms:focus-visible,input:focus-visible{o
 .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;padding:8px;border-radius:999px;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(37,51,43,.16);border:1px solid var(--line);z-index:20}
 .nb{width:48px;height:48px;border-radius:50%;border:0;background:transparent;color:var(--icon);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .nb.on{background:var(--pri);color:var(--on-pri)}
-@media (prefers-reduced-motion:reduce){.in,.sw .sk,body{transition:none}.car{scroll-behavior:auto}}
+
+/* Lenis (smooth scroll) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+
+/* Garis progres scroll (GSAP ScrollTrigger) */
+#sprog{position:fixed;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--pri),var(--gold));transform:scaleX(0);transform-origin:0 50%;z-index:40;pointer-events:none}
+
+@media (prefers-reduced-motion:reduce){.in,.sw .sk,body,.top{transition:none}.car{scroll-behavior:auto}#sprog{display:none}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/motion@11.18.2/dist/motion.js"></script>
 </head>
 <body>
+<div id="sprog" aria-hidden="true"></div>
 <div class="wrap" id="app"></div>
 <script>
 // =========================================================================
@@ -477,6 +493,230 @@ function save(){
   try { localStorage.setItem("aksara-lampung-progress", JSON.stringify(progress)); } catch(e) {}
 }
 
+// =========================================================================
+// 2B. EFEK GERAK: GSAP + ScrollTrigger, Motion, dan Lenis
+//     - Lenis      : smooth scroll halaman
+//     - GSAP + ST  : efek terikat scroll (garis progres, parallax, hitung angka, reveal)
+//     - Motion     : animasi masuk layar, hover, dan tekan
+//     Bila pustaka gagal dimuat atau pengguna memilih "kurangi gerakan",
+//     semua konten tetap tampil seperti biasa.
+// =========================================================================
+var Fx = (function(){
+  var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var G = window.gsap, ST = window.ScrollTrigger;
+  var MA = (window.Motion && typeof window.Motion.animate === 'function') ? window.Motion.animate : null;
+  var hasG = !!G, hasST = !!(G && ST), hasM = !!MA;
+  var lenis = null, ctx = null;
+  var EASE = [0.22, 1, 0.36, 1];
+  var SPRING = {type:'spring', stiffness:420, damping:26};
+  // Pilih elemen yang tidak bersarang supaya tidak dianimasikan dua kali
+  var REVEAL = '.hd,.pg,.top,.dcard,.dn,.dc,.infopanel,.guidebox,.rcard,.car,.dots,h2.sh,.sr,' +
+    '.qa .qc,.list .li,.stack .ac,.stack .pr,.lvgrid .lc,.exword,.scancard,.setr,.sec2 .btn,' +
+    '.qglyph,.ref,.draw,.act2,.hint,.board .card,.win,.lives,.tbar,.opts .opt,.mslots .ms,.kgrid .kc,.tabs,.res,.empty';
+
+  function qa(sel, root){ return Array.prototype.slice.call((root || app).querySelectorAll(sel)); }
+
+  if (hasST) { try { G.registerPlugin(ST); } catch(e) { hasST = false; } }
+
+  // ---------- Lenis ----------
+  if (window.Lenis && !RM) {
+    try {
+      lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true });
+      if (hasG) {
+        if (hasST) lenis.on('scroll', ST.update);
+        G.ticker.add(function(t){ lenis.raf(t * 1000); });
+        G.ticker.lagSmoothing(0);
+      } else {
+        (function loop(t){ lenis.raf(t); requestAnimationFrame(loop); })(0);
+      }
+    } catch(e) { lenis = null; }
+  }
+
+  function toTop(){
+    if (lenis) { try { lenis.scrollTo(0, {immediate:true, force:true}); } catch(e) {} }
+    window.scrollTo(0, 0);
+  }
+  function scrollTo(el){
+    if (!el) return;
+    if (lenis) { try { lenis.scrollTo(el, {offset:-90, duration:1}); return; } catch(e) {} }
+    try { el.scrollIntoView({behavior: RM ? 'auto' : 'smooth', block:'nearest'}); } catch(e) {}
+  }
+
+  // ---------- Efek scroll (GSAP + ScrollTrigger), dibuat di dalam gsap.context ----------
+  function scrollFx(){
+    // Parallax glyph pada slide beranda
+    qa('.slide .sg').forEach(function(el){
+      G.to(el, {yPercent:-14, rotate:8, ease:'none',
+        scrollTrigger:{trigger:el.closest('.car') || el, start:'top 85%', end:'bottom top', scrub:0.6}});
+    });
+    // Parallax glyph pada kartu latihan
+    qa('.ac .ag').forEach(function(el){
+      G.to(el, {y:-18, ease:'none',
+        scrollTrigger:{trigger:el.parentNode, start:'top bottom', end:'bottom top', scrub:true}});
+    });
+    // Bayangan pada bilah atas saat halaman digulir
+    qa('.top').forEach(function(t){
+      ST.create({start:0, end:'max', onUpdate:function(s){ t.classList.toggle('stuck', s.scroll() > 10); }});
+    });
+    // Cincin progres: isi dan hitung angka saat terlihat
+    qa('.ring').forEach(function(ring){
+      var fg = ring.querySelector('.fg'), b = ring.querySelector('b');
+      if (!fg || !b) return;
+      var C = parseFloat(fg.getAttribute('stroke-dasharray')) || 0;
+      var tgt = parseFloat(fg.getAttribute('stroke-dashoffset')) || 0;
+      var pct = parseInt(b.textContent, 10) || 0;
+      var o = {v:0};
+      G.set(fg, {strokeDashoffset:C});
+      b.textContent = '0%';
+      ST.create({trigger:ring, start:'top 94%', once:true, onEnter:function(){
+        G.to(fg, {strokeDashoffset:tgt, duration:1.3, ease:'power3.out'});
+        G.to(o, {v:pct, duration:1.3, ease:'power3.out', onUpdate:function(){ b.textContent = Math.round(o.v) + '%'; }});
+      }});
+    });
+    // Batang progres: tumbuh dari kiri saat terlihat
+    qa('.pr .bar i').forEach(function(bar){
+      var w = bar.style.width || '0%';
+      G.set(bar, {width:'0%'});
+      ST.create({trigger:bar.parentNode, start:'top 96%', once:true, onEnter:function(){
+        G.to(bar, {width:w, duration:1, ease:'power3.out', delay:0.1});
+      }});
+    });
+  }
+
+  // ---------- Animasi masuk (Motion) + reveal saat scroll (GSAP) ----------
+  function onboardIn(){
+    var hero = app.querySelector('.ohero'), tile = app.querySelector('.ohero .tile');
+    if (hero) MA(hero, {opacity:[0,1]}, {duration:0.5});
+    if (tile) {
+      MA(tile, {opacity:[0,1]}, {duration:0.5, delay:0.1});
+      var tg = tile.querySelector('.g');
+      if (tg) MA(tg, {scale:[0.5,1], rotate:[-18,0]}, {type:'spring', stiffness:170, damping:15, delay:0.15});
+    }
+    var bds = qa('.ohero .bd');
+    bds.forEach(function(bd, i){
+      MA(bd, {opacity:[0,1], scale:[0,1]}, {type:'spring', stiffness:260, damping:14, delay:0.3 + i * 0.09});
+    });
+    qa('.otx > *').forEach(function(el, i){
+      MA(el, {opacity:[0,1], y:[18,0]}, {duration:0.6, delay:0.4 + i * 0.09, ease:EASE});
+    });
+    var cta = app.querySelector('.cta');
+    if (cta) MA(cta, {opacity:[0,1], y:[26,0]}, {duration:0.6, delay:0.75, ease:EASE});
+    if (hasG) {
+      ctx = G.context(function(){
+        // Lencana melayang pelan (anak elemen supaya tidak bentrok dengan Motion)
+        qa('.ohero .bd .g').forEach(function(el){
+          G.to(el, {y:'random(-5,5)', x:'random(-4,4)', rotate:'random(-10,10)', duration:'random(1.8,3)',
+            repeat:-1, yoyo:true, ease:'sine.inOut', delay:1.2});
+        });
+        // Panah geser menggoda pengguna
+        var chev = app.querySelector('#cchev svg');
+        if (chev) G.to(chev, {x:6, duration:0.7, repeat:-1, yoyo:true, ease:'sine.inOut', delay:1.4});
+      }, app);
+    }
+  }
+
+  function enter(opts){
+    opts = opts || {};
+    if (ctx) { try { ctx.revert(); } catch(e) {} ctx = null; }
+    if (RM || !hasM) return;
+    if (app.querySelector('.onb')) { onboardIn(); return; }
+
+    var all = qa(REVEAL).filter(function(el){
+      var p = el.parentElement, up = p && p.closest ? p.closest(REVEAL) : null;
+      return !(up && app.contains(up));
+    });
+    var vh = window.innerHeight || 800, inView = [], below = [];
+    all.forEach(function(el){ (el.getBoundingClientRect().top < vh * 0.92 ? inView : below).push(el); });
+
+    inView.forEach(function(el, i){
+      MA(el, {opacity:[0,1], y:[24,0]}, {duration:0.6, delay:Math.min(i, 14) * 0.05, ease:EASE});
+    });
+
+    if (opts.light) {
+      below.forEach(function(el, i){ MA(el, {opacity:[0,1], y:[20,0]}, {duration:0.5, delay:Math.min(i, 14) * 0.04, ease:EASE}); });
+      return;
+    }
+    if (hasST) {
+      ctx = G.context(function(){
+        if (below.length) {
+          G.set(below, {opacity:0, y:30});
+          ST.batch(below, {start:'top 94%', once:true, onEnter:function(b){
+            G.to(b, {opacity:1, y:0, duration:0.65, ease:'power3.out', stagger:0.07, overwrite:true, clearProps:'opacity,transform'});
+          }});
+        }
+        scrollFx();
+      }, app);
+      requestAnimationFrame(function(){ try { ST.refresh(); } catch(e) {} });
+    } else {
+      below.forEach(function(el, i){ MA(el, {opacity:[0,1], y:[20,0]}, {duration:0.5, delay:Math.min(i, 14) * 0.04, ease:EASE}); });
+    }
+  }
+
+  // ---------- Umpan balik kecil ----------
+  function pop(el){ if (RM || !hasM || !el) return; MA(el, {opacity:[0,1], scale:[0.88,1]}, {type:'spring', stiffness:260, damping:18}); }
+  function shake(el){ if (RM || !hasM || !el) return; MA(el, {x:[0,-8,8,-5,5,0]}, {duration:0.4}); }
+  function pulse(el){ if (RM || !hasM || !el) return; MA(el, {scale:[1,1.07,1]}, {duration:0.35}); }
+
+  // ---------- Hover dan tekan (Motion), pakai delegasi supaya tahan render ulang ----------
+  var HOV = '.qc,.li,.ac,.lc,.exword,.pr,.card,.btn,.tab,.ib,.sugchip,.opt,.pill,.rb,.kc,.nb';
+  var BIG = '.qc,.li,.ac,.lc,.exword,.pr,.card';
+  function hoverTarget(t){
+    var el = t && t.closest ? t.closest(HOV) : null;
+    if (!el || !app.contains(el) && !el.closest('.nav')) return null;
+    if (el.disabled || el.classList.contains('ok') || (el.classList.contains('card') && el.classList.contains('on'))) return null;
+    return el;
+  }
+  function restState(el){ return el.matches(BIG) ? {scale:1, y:0} : {scale:1}; }
+  function hoverState(el){ return el.matches(BIG) ? {scale:1.015, y:-3} : {scale:el.matches('.nb') ? 1.1 : 1.05}; }
+  function initHover(){
+    if (RM || !hasM) return;
+    var pressed = null, hovered = null;
+    document.addEventListener('pointerover', function(e){
+      if (e.pointerType !== 'mouse') return;
+      var el = hoverTarget(e.target);
+      if (!el || el === hovered || (e.relatedTarget && el.contains(e.relatedTarget))) return;
+      hovered = el;
+      MA(el, hoverState(el), SPRING);
+    });
+    document.addEventListener('pointerout', function(e){
+      if (e.pointerType !== 'mouse') return;
+      var el = e.target && e.target.closest ? e.target.closest(HOV) : null;
+      if (!el || (e.relatedTarget && el.contains(e.relatedTarget))) return;
+      if (hovered === el) hovered = null;
+      if (el.isConnected) MA(el, restState(el), SPRING);
+    });
+    document.addEventListener('pointerdown', function(e){
+      var el = hoverTarget(e.target);
+      if (!el) return;
+      pressed = el;
+      MA(el, {scale:0.96}, {type:'spring', stiffness:600, damping:30});
+    });
+    function release(e){
+      if (!pressed) return;
+      var el = pressed; pressed = null;
+      if (!el.isConnected) return;
+      MA(el, (e.pointerType === 'mouse' && el === hovered) ? hoverState(el) : restState(el), SPRING);
+    }
+    document.addEventListener('pointerup', release);
+    document.addEventListener('pointercancel', release);
+  }
+
+  // ---------- Garis progres scroll di atas layar ----------
+  function initProgress(){
+    if (RM || !hasST) return;
+    var bar = document.getElementById('sprog');
+    if (!bar) return;
+    ST.create({trigger:document.documentElement, start:0, end:'max', onUpdate:function(s){
+      bar.style.transform = 'scaleX(' + s.progress + ')';
+    }});
+  }
+
+  initProgress();
+  initHover();
+
+  return {enter:enter, toTop:toTop, scrollTo:scrollTo, pop:pop, shake:shake, pulse:pulse};
+})();
+
 function g(id, cls){
   var d = GL_PATH[id] || "";
   return '<i class="g ' + (cls || "") + '" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></i>';
@@ -594,8 +834,9 @@ function mount(tab, html){
   app.innerHTML = '<div class="scr">' + html + '</div>' + nav(tab);
   bindSwitches();
   Array.prototype.forEach.call(app.querySelectorAll('.nb'), function(b){
-    b.onclick = function(){ shell(b.getAttribute('data-tab')); window.scrollTo(0, 0); };
+    b.onclick = function(){ Fx.toTop(); shell(b.getAttribute('data-tab')); };
   });
+  Fx.enter();
 }
 
 function shell(tab){
@@ -622,6 +863,7 @@ function onboard(){
       '<span class="cch" id="cchev">' + ico('dchev', 20) + '</span>' +
     '</div></div>';
   app.innerHTML = h;
+  Fx.enter();
 
   var cta = document.getElementById('cta');
   var knob = document.getElementById('knob');
@@ -632,8 +874,8 @@ function onboard(){
   function complete(){
     progress.onb = 1;
     save();
+    Fx.toTop();
     shell('home');
-    window.scrollTo(0, 0);
   }
 
   knob.onpointerdown = function(e){
@@ -865,7 +1107,9 @@ function detailAnak(anakId){
     (CAN_SPEAK ? '<button class="btn big" id="spak">' + ico('speaker', 20) + 'Dengarkan bunyi “' + item.baca + '”</button>' : '') +
     '<div class="act2"><button class="btn alt wide" id="backlist">Kembali ke Daftar Anak Aksara</button></div>';
 
+  Fx.toTop();
   app.innerHTML = h;
+  Fx.enter();
   on('back', function(){ MF = 'anak'; materi(); });
   on('backlist', function(){ MF = 'anak'; materi(); });
   on('spak', function(){ speakSentence(item.baca); });
@@ -879,7 +1123,9 @@ function detail(id, auto){
     '<h1 class="dn">' + NAMA[id] + '</h1><p class="muted dc">Huruf induk ke-' + (i + 1) + ' dari 20 · dibaca “' + NAMA[id].toLowerCase() + '”</p>' +
     (CAN_SPEAK ? '<button class="btn big" id="sp">' + ico('speaker', 20) + 'Dengarkan</button>' : '<p class="muted dc">Suara tidak didukung di peramban ini.</p>') +
     '<div class="act2"><button class="btn alt" id="pv">Sebelumnya</button><button class="btn alt" id="nx">Berikutnya</button><button class="btn alt wide" id="wr">Latih menulis</button></div>';
+  Fx.toTop();
   app.innerHTML = h;
+  Fx.enter();
   on('back', menu);
   on('sp', function(){ speak(id); });
   on('pv', function(){ detail(ORDER[(i + 19) % 20]); });
@@ -948,8 +1194,8 @@ function normalizeOcrText(raw){
     .replace(/[1|!]/g, "i")
     .replace(/5/g, "s")
     .replace(/8/g, "b")
-    .replace(/[^a-z\u00e9\s]/g, " ")
-    .replace(/([aiueo\u00e9])\1+/g, "$1")
+    .replace(/[^a-zé\s]/g, " ")
+    .replace(/([aiueoé])\1+/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1015,7 +1261,7 @@ function checkDictionary(cleanText){
 }
 
 function wordToAksaraUnits(word){
-  var w = normalizeOcrText(word).replace(/\s+/g, "").replace(/([aiueo\u00e9])\1+/g, "$1");
+  var w = normalizeOcrText(word).replace(/\s+/g, "").replace(/([aiueoé])\1+/g, "$1");
   var units = [];
   var i = 0;
 
@@ -1393,7 +1639,9 @@ function kartu(){
     h += '<button class="lc' + (i === 4 ? ' wide' : '') + '" data-i="' + i + '"><span class="lh"><span class="n">' + (i + 1) + '</span><span class="st">' + stars(st) + '</span></span><span class="strip">' + ids.map(function(x){ return g(x); }).join("") + '</span><small>' + l.judul + '</small></button>';
   });
   h += '</div>';
+  Fx.toTop();
   app.innerHTML = h;
+  Fx.enter();
   document.getElementById("back").onclick = menu;
   Array.prototype.forEach.call(app.querySelectorAll(".lc"), function(b){
     b.onclick = function(){ play(+b.getAttribute("data-i")); };
@@ -1415,7 +1663,9 @@ function play(i){
     h += '<button class="card" data-k="' + k + '" aria-label="Kartu ' + (k + 1) + '"><div class="in"><div class="b"></div><div class="f">' + face + '</div></div></button>';
   });
   h += '</div><div id="end"></div>';
+  Fx.toTop();
   app.innerHTML = h;
+  Fx.enter();
   document.getElementById("back").onclick = kartu;
   var cards = app.querySelectorAll(".card");
   Array.prototype.forEach.call(cards, function(el){
@@ -1427,7 +1677,7 @@ function play(i){
         moves++; document.getElementById("mv").textContent = moves;
         var a = deck[open[0]], b = deck[open[1]];
         if (a.id === b.id) {
-          open.forEach(function(x){ cards[x].classList.add("ok"); });
+          open.forEach(function(x){ cards[x].classList.add("ok"); Fx.pulse(cards[x]); });
           open = []; found++;
           if (found === ids.length) finish();
         } else {
@@ -1447,10 +1697,11 @@ function play(i){
     if (i < LEVELS.length - 1) e += '<button class="btn" id="next">Level berikutnya</button>';
     e += '<button class="btn alt" id="menu2">Daftar level</button></div></div>';
     document.getElementById("end").innerHTML = e;
+    Fx.pop(document.querySelector("#end .win"));
     document.getElementById("again").onclick = function(){ play(i); };
     var nx = document.getElementById("next"); if (nx) nx.onclick = function(){ play(i + 1); };
     document.getElementById("menu2").onclick = kartu;
-    document.getElementById("end").scrollIntoView({behavior:"smooth", block:"nearest"});
+    Fx.scrollTo(document.getElementById("end"));
   }
 }
 
@@ -1460,6 +1711,7 @@ function stopT(){ if (timer) { clearInterval(timer); timer = null; } }
 function tebak(){
   stopT();
   var qs = shuffle(ORDER).slice(0, 10), qi = 0, lives = 3, score = 0, T = 8000, left = T, locked = false, gone = false;
+  Fx.toTop();
   function render(){
     var id = qs[qi];
     var opts = shuffle([id].concat(shuffle(ORDER.filter(function(x){ return x !== id; })).slice(0, 3)));
@@ -1469,6 +1721,7 @@ function tebak(){
     opts.forEach(function(o){ h += '<button class="btn opt" data-id="' + o + '">' + NAMA[o] + '</button>'; });
     h += '</div>';
     app.innerHTML = h;
+    Fx.enter({light:true});
     document.getElementById('back').onclick = function(){ gone = true; stopT(); menu(); };
     left = T; locked = false; stopT();
     timer = setInterval(function(){
@@ -1487,8 +1740,8 @@ function tebak(){
     if (ok) score++; else lives--;
     Array.prototype.forEach.call(app.querySelectorAll('.opt'), function(b){
       var bid = b.getAttribute('data-id');
-      if (bid === id) b.classList.add('good');
-      else if (b === btn) b.classList.add('bad');
+      if (bid === id) { b.classList.add('good'); Fx.pulse(b); }
+      else if (b === btn) { b.classList.add('bad'); Fx.shake(b); }
       b.disabled = true;
     });
     setTimeout(function(){
@@ -1503,6 +1756,7 @@ function tebak(){
     if (score > (progress.tebak || 0)) { progress.tebak = score; save(); }
     var e = '<div class="top"><button class="btn alt" id="back">Menu</button><div class="stat">Tebak aksara</div></div><div class="win"><h2>' + (lives <= 0 ? 'Nyawa habis' : 'Selesai!') + '</h2><div class="stars">' + stars(s) + '</div><p>Benar ' + score + ' dari ' + qs.length + ' soal. Terbaik: ' + progress.tebak + '.</p><div class="acts"><button class="btn" id="again">Main lagi</button><button class="btn alt" id="m2">Menu</button></div></div>';
     app.innerHTML = e;
+    Fx.pop(app.querySelector('.win'));
     document.getElementById('back').onclick = menu;
     document.getElementById('m2').onclick = menu;
     document.getElementById('again').onclick = tebak;
@@ -1516,7 +1770,8 @@ function susun(r){
   var judul = ['Lima pertama','Lima berikutnya','Lima ketiga','Lima terakhir','Campur 10 aksara'];
   var ids = sets[r] || shuffle(ORDER).slice(0, 10);
   var names = shuffle(ids), pool = shuffle(ids);
-  var placed = {}, sel = null, wrong = null, errs = 0, busy = false, gone = false;
+  var placed = {}, sel = null, wrong = null, errs = 0, busy = false, gone = false, first = true;
+  Fx.toTop();
   function mk(ok){
     return '<span class="mk ' + (ok ? 'ok' : 'bad') + '" role="img" aria-label="' + (ok ? 'Benar' : 'Salah') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ok ? '<path d="M5 12.5l4.5 4.5L19 7.5"/>' : '<path d="M6 6l12 12M18 6L6 18"/>') + '</svg></span>';
   }
@@ -1544,6 +1799,9 @@ function susun(r){
       h += '</div>';
     }
     app.innerHTML = h;
+    if (first) { first = false; Fx.enter({light:true}); }
+    if (done()) Fx.pop(app.querySelector('.win'));
+    else if (wrong) Fx.shake(app.querySelector('.ms.bad'));
     document.getElementById('back').onclick = function(){ gone = true; menu(); };
     function drop(n, id){
       if (busy || placed[n]) return;
@@ -1604,7 +1862,9 @@ function tulis(i){
   h += '<div class="act2"><button class="btn alt" id="clr">Hapus</button><button class="btn alt" id="gt">Panduan: mati</button><button class="btn wide" id="chk">Periksa</button></div>';
   h += '<div class="res" id="res" aria-live="polite"></div>';
   h += '<div class="act2"><button class="btn alt wide" id="nx">Aksara lain</button></div>';
+  Fx.toTop();
   app.innerHTML = h;
+  Fx.enter({light:true});
   document.getElementById('back').onclick = menu;
   document.getElementById('nx').onclick = function(){ var j; do { j = Math.floor(Math.random() * 20); } while (j === i); tulis(j); };
   var cv = document.getElementById('cv'), cx = cv.getContext('2d');
@@ -1657,6 +1917,7 @@ function tulis(i){
       msg = 'Kemiripan ' + pct + '%. Gambar melebar dari bentuk aksara.';
     }
     res.innerHTML = (s > 0 ? '<div class="stars">' + stars(s) + '</div>' : '') + msg;
+    Fx.pop(res);
   };
 }
 
